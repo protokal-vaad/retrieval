@@ -22,9 +22,6 @@ class Settings(BaseSettings):
     MODEL_NAME: str = Field(..., description="Vertex AI chat model name")
     EMBEDDING_MODEL: str = Field(..., description="Vertex AI embedding model name")
 
-    # API Key
-    GOOGLE_API_KEY: str = Field(..., description="Google Gemini API key")
-
     # Logging
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
 

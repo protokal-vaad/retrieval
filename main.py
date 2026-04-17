@@ -1,24 +1,23 @@
 import os
+import sys
 from src.settings import Settings
 from src.logger import AppLogger
 from src.retriever import FirestoreRetriever
 from src.agent import RAGAgent
-from src.app import GradioApp
+
+
+TEST_QUESTION = "מה הנושאים שנלמדים בקורס?"
 
 
 def main():
-    # Load all configuration from .env
+    sys.stdout.reconfigure(encoding="utf-8")
     config = Settings()
 
-    # Set GCP credentials environment variable for SDK clients
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS
-    os.environ["GOOGLE_API_KEY"] = config.GOOGLE_API_KEY
 
-    # Initialise logger
     logger = AppLogger(level=config.LOG_LEVEL).get()
-    logger.info("Starting RAG Retrieval System.")
+    logger.info("Testing vector DB connection with one question.")
 
-    # Build and initialise the Firestore retriever (Dependency Injection)
     retriever = FirestoreRetriever(
         project_id=config.GCP_PROJECT_ID,
         location=config.VERTEXAI_LOCATION,
@@ -29,20 +28,22 @@ def main():
     )
     retriever.setup()
 
-    # Build and initialise the RAG agent
     agent = RAGAgent(
         model_name=config.MODEL_NAME,
-        project_id=config.GCP_PROJECT_ID,
-        location=config.VERTEXAI_LOCATION,
         retriever=retriever,
         logger=logger,
     )
     agent.setup()
 
-    # Build and launch the Gradio UI
-    app = GradioApp(agent=agent, logger=logger)
-    app.setup()
-    app.launch()
+    result = agent.run(TEST_QUESTION)
+
+    print(f"\n{'=' * 60}")
+    print(f"Question : {result.question}")
+    print(f"\nAnswer   :\n{result.answer}")
+    print(f"\nSources  : {len(result.source_documents)} document(s)")
+    for i, doc in enumerate(result.source_documents, 1):
+        print(f"  [{i}] {doc.content[:120]}...")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
