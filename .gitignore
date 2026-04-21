@@ -21,3 +21,12 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated eval outputs — rebuilt on every run
+eval_set.json
+eval_report.json
+eval_dashboard.html
+
+# Scratch / temp files
+scratch_test.py
+*.scratch.py
