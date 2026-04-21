@@ -106,7 +106,7 @@ Preferred design direction:
 
 ## Current Active Stage
 
-Commit: `62fab87`
+Commit: `5822818`
 Agent: `Codex`
-Status: documented the evaluation audit and verified the current runner works end-to-end but is measuring a stale `eval_set.json`
-- Next: stabilize the data contract so evaluation runs against fresh benchmark data instead of stale stored answers
+Status: stabilized the eval data contract so `run_eval.py` rebuilds a fresh eval set from `_QUESTIONS` before scoring
+- Next: review the scoring heuristics, especially retrieval for broad questions and edge-case quality checks
