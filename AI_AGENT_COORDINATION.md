@@ -136,8 +136,9 @@ Suggested lifecycle:
 ### Git / Repo Status
 
 - Branch: `main`
-- Latest known push from this session: commit `a961bd2`
-- Commit message: `Expand retrieval eval question set`
+- Recent pushed commits from this session:
+  - `a961bd2` - `Expand retrieval eval question set`
+  - `4598efc` - `Add multi-agent coordination guide`
 
 ### What Was Already Verified In This Session
 
@@ -192,3 +193,63 @@ Notes for next agent:
 
 - Continue with Phase 1 before building new UI or new benchmark infrastructure
 - Update this file again after each meaningful milestone
+
+### 2026-04-21 - Evaluation Audit And Controlled Run
+
+Agent: Codex
+
+Completed:
+
+- Mapped the current evaluation flow from `_QUESTIONS` in `build_eval.py` to `eval_set.json`, then into `run_eval.py`, then into the four evaluator modules
+- Read and reviewed the main evaluation components:
+  - `run_eval.py`
+  - `src/models.py`
+  - `src/eval_retrieval.py`
+  - `src/eval_answer.py`
+  - `src/eval_chunking.py`
+  - `src/eval_edge_cases.py`
+  - `src/agent.py`
+  - `src/retriever.py`
+  - `src/judge.py`
+  - `src/dashboard.py`
+- Verified that `run_eval.main()` can execute end-to-end when the browser open call is neutralized
+- Verified that the current run produced `eval_report.json` and `eval_dashboard.html`
+- Verified that `_QUESTIONS` currently contains 53 items
+- Verified that the checked-in `eval_set.json` is still version `1.0` with only `10` items
+
+Key findings:
+
+- The current `run_eval.py` does not rebuild `eval_set.json` before evaluation
+- The current `eval_set.json` is stale relative to `_QUESTIONS`
+- Because the current `eval_set.json` lacks the richer metadata expected by the newer evaluators, the controlled `run_eval` execution produced:
+  - Retrieval evaluation on `0/10` scorable items
+  - Edge-case evaluation on `0/10` scorable items
+  - Answer completeness average `0.0`
+- `AnswerEvaluator` judges `item.answer` from `eval_set.json`, not necessarily a fresh answer generated during the current run
+- This means the current answer-quality score can drift away from the live system if `eval_set.json` is not rebuilt immediately before evaluation
+- `EdgeCaseEvaluator` currently uses lightweight heuristics:
+  - `cross_protocol` only checks whether retrieval returned multiple source files
+  - `ambiguous` mostly checks for short or caveated answers, not true hallucination control
+  - `no_answer` checks refusal behavior, but not retrieval quality
+- `ChunkingEvaluator` is the most operationally complete module right now; the controlled run returned a pass with 667 chunks, 116 files, and 13 issues
+- `run_eval.py` ends by opening a browser, which is not ideal for automation or headless usage
+
+Controlled run summary:
+
+- `run_eval.py` completed successfully in a controlled invocation
+- Overall score from that run was not trustworthy as a product signal because it was computed over a stale `eval_set.json`
+- The run still proved that the current orchestration path is functional
+
+Open:
+
+- Decide what the source of truth is between `_QUESTIONS` and `eval_set.json`
+- Decide whether `run_eval.py` should:
+  - always rebuild a fresh eval set first
+  - fail if `eval_set.json` is stale
+  - or generate fresh live answers during evaluation instead of relying on stored answers
+- Tighten the edge-case scoring logic so it measures actual behavior quality, not only coarse heuristics
+
+Notes for next agent:
+
+- Do not trust the current overall score from `run_eval.py` until the freshness contract between `_QUESTIONS`, `eval_set.json`, and the evaluators is fixed
+- The first architectural issue to solve is the data contract, not the dashboard
