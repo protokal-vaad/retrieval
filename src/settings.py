@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # Models
     MODEL_NAME: str = Field(..., description="Vertex AI chat model name")
     EMBEDDING_MODEL: str = Field(..., description="Vertex AI embedding model name")
+    EMBEDDING_DIMENSIONS: int = Field(default=768, description="Output dimensionality for embeddings — must match the index in Firestore")
 
     # Logging
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")

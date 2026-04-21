@@ -19,11 +19,13 @@ def main():
     logger.info("Testing vector DB connection with one question.")
 
     retriever = FirestoreRetriever(
+        sa_path=config.GOOGLE_APPLICATION_CREDENTIALS,
         project_id=config.GCP_PROJECT_ID,
         location=config.VERTEXAI_LOCATION,
         collection=config.FIRESTORE_COLLECTION,
         database=config.FIRESTORE_DATABASE,
         embedding_model=config.EMBEDDING_MODEL,
+        embedding_dimensions=config.EMBEDDING_DIMENSIONS,
         logger=logger,
     )
     retriever.setup()
