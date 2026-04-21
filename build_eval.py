@@ -17,7 +17,10 @@ from src.settings import Settings
 # ---------------------------------------------------------------------------
 
 _QUESTIONS: list[dict] = [
-    # ── Round 1: Broad exploratory (category=broad) ──────────────────────
+    # =====================================================================
+    # Round 1: Broad exploratory (category=broad)
+    # No source_files — answer may come from many meetings.
+    # =====================================================================
     {
         "round": 1,
         "category": "broad",
@@ -61,63 +64,111 @@ _QUESTIONS: list[dict] = [
         "expected_section_types": ["Topic Discussion"],
     },
 
-    # ── Round 2: Specific follow-up (category=specific) ──────────────────
+    # =====================================================================
+    # Round 2: Specific topic — each grounded in one or two specific protocols.
+    # `expected_source_files` uses substrings that match the stored filename
+    # (e.g. "11.25" matches both `פרוטוקול ועד 11.25.pdf` and `.pdf.docx`).
+    # =====================================================================
     {
         "round": 2,
         "category": "specific",
-        "question": "מה הייתה ההחלטה שהתקבלה בנושא התחזוקה של השכונה?",
+        "question": "מה הוחלט בנושא צמצום פעילות קבלן הגינון בישיבה 11/25?",
+        "golden_answer": "הוועד החליט להפסיק את חוזה הגינון במתכונתו הנוכחית ולפתוח מכרז גינון חדש שישקף תקציב מופחת, כדי לקצץ 150,000 ₪ ולהעביר לתקציב חינוך בלתי פורמלי.",
+        "expected_source_files": ["11.25"],
         "expected_section_types": ["Topic Discussion"],
     },
     {
         "round": 2,
         "category": "specific",
-        "question": "באיזו ישיבה נדון הנושא הדחוף ביותר ומה הוחלט?",
+        "question": "מה הוחלט בנושא מינוי מנכ\"ל קבע ליישוב?",
+        "golden_answer": "הוועד החליט למנות את אוריאל שקד כמנכ\"ל הקבע של היישוב (ישיבה 04/25).",
+        "expected_source_files": ["4.25"],
         "expected_section_types": ["Topic Discussion"],
     },
     {
         "round": 2,
         "category": "specific",
-        "question": "האם ישנן החלטות שנדחו לישיבה הבאה? אם כן, אילו?",
-        "expected_section_types": ["Topic Discussion", "Closing and Decisions"],
-    },
-    {
-        "round": 2,
-        "category": "specific",
-        "question": "מי מבין חברי הוועד הגיש הצעה או יוזמה רשמית?",
+        "question": "מה הוחלט לגבי החלפת יו\"ר הוועד?",
+        "golden_answer": "יצחק בוכניק הודיע על סיום כהונתו לפני השלמת 18 חודשים, והוועד בחר פה אחד באייל קלמן כיו\"ר החדש (ישיבה 14/25).",
+        "expected_source_files": ["14.25"],
         "expected_section_types": ["Topic Discussion"],
     },
     {
         "round": 2,
         "category": "specific",
-        "question": "מה הסכום שאושר או נדון בהקשר לתקציב הוועד?",
-        "expected_section_types": ["Topic Discussion"],
-    },
-    {
-        "round": 2,
-        "category": "specific",
-        "question": "מה הוחלט בנושא מינוי מנכ\"ל חדש ליישוב?",
-        "expected_section_types": ["Topic Discussion"],
-    },
-    {
-        "round": 2,
-        "category": "specific",
-        "question": "מה הוחלט בנושא ועדת הגינון ותכניותיה?",
+        "question": "מי נבחר כקבלן הגינון החדש לתקופת יולי-דצמבר 2025?",
+        "golden_answer": "אייל לוי, חבר האגודה, נבחר מבין 6 הצעות מחיר (ישיבה 16/25).",
+        "expected_source_files": ["16.25"],
         "expected_section_types": ["Topic Discussion"],
     },
     {
         "round": 2,
         "category": "specific",
         "question": "מה עלה בנושא פרסום הפרוטוקולים ושיטת ההפצה?",
+        "golden_answer": "הוחלט שאחרי עריכת הפרוטוקול ואישור היו\"ר, הוא יישלח לאורן בודנר שיתמצת אותו דרך מערכת ה-AI \"פרוטוקל\", התמצית תחולק לנושאים משותפים ולהחלטות, תאושר ע\"י המנכ\"ל, ותופץ יחד עם הפרוטוקולים החתומים.",
+        "expected_source_files": ["17.25"],
         "expected_section_types": ["Topic Discussion"],
     },
     {
         "round": 2,
         "category": "specific",
-        "question": "מה הוחלט בנושא דרך הגן והסדרי התנועה ביישוב?",
+        "question": "מה הוחלט בנושא העלאת תעריפי הארנונה לשנת 2026?",
+        "golden_answer": "הוועד אישר פה אחד העלאת ארנונה של 1.626% בהתאם לשיעור שנקבע ע\"י משרד הפנים (ישיבה 13/25).",
+        "expected_source_files": ["13.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 2,
+        "category": "specific",
+        "question": "מה הוחלט בנושא סמלי המעון ליישוב?",
+        "golden_answer": "סמל המעון יישאר לבינתיים בבעלות המועצה; היישוב ישלם השתתפות חודשית של 500 ₪ והמועצה תישא באחריות הדיווח למשרד החינוך (ישיבה 16/25).",
+        "expected_source_files": ["16.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 2,
+        "category": "specific",
+        "question": "מה הוחלט בנושא הצעת מכולת בריחן?",
+        "golden_answer": "הוועד החליט לקדם את מיזם המכולת של דור בוכניק בקונספט שירות עצמי, בכפוף לבדיקת חלופות מיקום ואישור המועצה והיישוב (ישיבה 05/25).",
+        "expected_source_files": ["5.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 2,
+        "category": "specific",
+        "question": "מה הוחלט בנוגע לקבלת החבר שחר אלידע לוועד?",
+        "golden_answer": "שחר אלידע הוזמן כבא בתור ברשימת הבחירות והחל לכהן כחבר ועד מן המניין, במקום דן בר-אל שעזב (ישיבה 05/25).",
+        "expected_source_files": ["5.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 2,
+        "category": "specific",
+        "question": "מה הוחלט בנושא העלאת שכר המזכירה?",
+        "golden_answer": "השכר יועלה באופן מידתי בכפוף לתוספת שעות נוספות חודשיות (ישיבה 03/25).",
+        "expected_source_files": ["3.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 2,
+        "category": "specific",
+        "question": "מה הייתה התוכנית להתמודדות עם סכנות שריפות ביישוב?",
+        "golden_answer": "הוצגה תכנית להכשרה והצטיידות של כיתת כוננות אש ממתנדבים תושבי היישוב בעלות של כ-200,000 ₪, שתועלה להצבעה באסיפה (ישיבה 14/25).",
+        "expected_source_files": ["14.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 2,
+        "category": "specific",
+        "question": "מה הוחלט בנושא הקצאת שטח לקרול שדה?",
+        "golden_answer": "הוועד אישר את מתווה המיזם ויחתום על הסכם, לאחר שקרול חתמה על מסמך מאומת ע\"י נוטריון המעיד על מודעותה לסיכונים של התב\"ע העתידית (ישיבה 04/25).",
+        "expected_source_files": ["4.25"],
         "expected_section_types": ["Topic Discussion"],
     },
 
-    # ── No-answer questions (category=no_answer) ─────────────────────────
+    # =====================================================================
+    # Round 3: No-answer — information is not in the protocols at all.
+    # =====================================================================
     {
         "round": 3,
         "category": "no_answer",
@@ -161,13 +212,23 @@ _QUESTIONS: list[dict] = [
     {
         "round": 3,
         "category": "no_answer",
-        "question": "מה הוחלט בנושא תחבורה ציבורית ליישוב?",
-        "golden_answer": "אין מידע על דיון בתחבורה ציבורית בפרוטוקולים.",
+        "question": "מה הוחלט בנושא הקמת קו אוטובוס חדש מריחן לחיפה?",
+        "golden_answer": "אין מידע בפרוטוקולים על הקמת קו אוטובוס לחיפה.",
+        "expected_section_types": [],
+        "expected_source_files": [],
+    },
+    {
+        "round": 3,
+        "category": "no_answer",
+        "question": "כמה חברי ועד פרשו לפנסיה בשנת 2025?",
+        "golden_answer": "אין מידע על פרישה לפנסיה של חברי ועד בפרוטוקולים.",
         "expected_section_types": [],
         "expected_source_files": [],
     },
 
-    # ── Cross-protocol questions (category=cross_protocol) ───────────────
+    # =====================================================================
+    # Round 4: Cross-protocol — answer must span multiple meetings.
+    # =====================================================================
     {
         "round": 4,
         "category": "cross_protocol",
@@ -204,41 +265,47 @@ _QUESTIONS: list[dict] = [
         "question": "מה ההיסטוריה של החלטות הוועד בנושא קיצוץ תקציבי?",
         "expected_section_types": ["Topic Discussion"],
     },
+    {
+        "round": 4,
+        "category": "cross_protocol",
+        "question": "איך התפתחה התקדמות בנושא חברת הרי זהב ותשלומי המיסים לאורך הישיבות?",
+        "expected_section_types": ["Topic Discussion"],
+    },
 
-    # ── Specificity questions (category=specificity) ─────────────────────
+    # =====================================================================
+    # Round 5: Specificity — precise numbers, dates, names from specific files.
+    # =====================================================================
     {
         "round": 5,
         "category": "specificity",
         "question": "מה הסכום שהיה בחשבון הפיתוח לפי ישיבה 08/25?",
-        "golden_answer": "642,331 שקלים בחשבון הפיתוח.",
+        "golden_answer": "642,331 ₪ בחשבון הפיתוח.",
+        "expected_source_files": ["08.25"],
         "expected_section_types": ["Topic Discussion"],
     },
     {
         "round": 5,
         "category": "specificity",
         "question": "מי היה יו\"ר הוועד בישיבה שהתקיימה ב-30.03.25?",
-        "golden_answer": "יצחק בוכניק היה יו\"ר הוועד.",
+        "golden_answer": "יצחק בוכניק היה יו\"ר הוועד (ישיבה 08/25).",
+        "expected_source_files": ["08.25", "30.03.25"],
         "expected_section_types": ["Header and Agenda"],
     },
     {
         "round": 5,
         "category": "specificity",
         "question": "כמה כסף הוחלט לקצץ מתקציב הגינון?",
-        "golden_answer": "150,000 שקלים.",
+        "golden_answer": "150,000 ₪ (הקיצוץ הועבר לתקציב חינוך בלתי פורמלי).",
+        "expected_source_files": ["11.25"],
         "expected_section_types": ["Topic Discussion"],
     },
     {
         "round": 5,
         "category": "specificity",
         "question": "מה הגירעון השנתי הצפוי שדווח בישיבה 08/25?",
-        "golden_answer": "כ-400 אלף שקלים בשל אי תשלום מיסי אזור תעשיה רזפול.",
+        "golden_answer": "כ-400 אלף ₪ בשל אי תשלום מיסי אזור תעשיה רזפול.",
+        "expected_source_files": ["08.25"],
         "expected_section_types": ["Topic Discussion"],
-    },
-    {
-        "round": 5,
-        "category": "specificity",
-        "question": "כמה חברי ועד מנויים ברשימת המשתתפים בישיבה 17/25?",
-        "expected_section_types": ["Header and Agenda"],
     },
     {
         "round": 5,
@@ -247,8 +314,50 @@ _QUESTIONS: list[dict] = [
         "golden_answer": "04-6350257.",
         "expected_section_types": ["Header and Agenda"],
     },
+    {
+        "round": 5,
+        "category": "specificity",
+        "question": "מה תעריף ההעלאה שאושר בצו הארנונה לשנת 2026?",
+        "golden_answer": "1.626% כשיעור שנקבע ע\"י משרד הפנים.",
+        "expected_source_files": ["13.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 5,
+        "category": "specificity",
+        "question": "מי מונה כמנכ\"ל הקבע של היישוב ובאיזו ישיבה?",
+        "golden_answer": "אוריאל שקד מונה כמנכ\"ל הקבע של היישוב, בישיבה 04/25 (09.02.25).",
+        "expected_source_files": ["4.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 5,
+        "category": "specificity",
+        "question": "מה הייתה עלות התוכנית להכשרת כיתת כוננות האש?",
+        "golden_answer": "כ-200,000 ₪ (ישיבה 14/25).",
+        "expected_source_files": ["14.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 5,
+        "category": "specificity",
+        "question": "מה היה הסכום בחשבון הפיתוח לפי דו\"ח התזרים מיום 22/06/2025?",
+        "golden_answer": "802,344 ₪ בחשבון הפיתוח (ישיבה 15/25).",
+        "expected_source_files": ["15.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 5,
+        "category": "specificity",
+        "question": "כמה סגרו פרויקטים 2024-2025 חריגה מהתקציב, לפי ישיבה 11/25?",
+        "golden_answer": "כלל הפרויקטים 2024-2025 לא חרגו מתקציב שאושר (ישיבה 11/25).",
+        "expected_source_files": ["11.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
 
-    # ── Ambiguous questions (category=ambiguous) ─────────────────────────
+    # =====================================================================
+    # Round 6: Ambiguous — testing graceful handling of vague questions.
+    # =====================================================================
     {
         "round": 6,
         "category": "ambiguous",
@@ -272,6 +381,61 @@ _QUESTIONS: list[dict] = [
         "category": "ambiguous",
         "question": "תגיד משהו על ריחן",
         "expected_section_types": [],
+    },
+
+    # =====================================================================
+    # Round 7: Person-based — retrieval should find the right speaker/role.
+    # =====================================================================
+    {
+        "round": 7,
+        "category": "specific",
+        "question": "מי מילא את תפקיד מזכיר הישיבות בישיבות הוועד ב-2025?",
+        "golden_answer": "אוריאל שקד שימש כמזכיר רוב הישיבות ב-2025.",
+        "expected_section_types": ["Header and Agenda"],
+    },
+    {
+        "round": 7,
+        "category": "specific",
+        "question": "מי הציג את תוכנית התב\"ע העתידית בפני הוועד?",
+        "golden_answer": "אורן ספרים הופיע בפני הוועד והעיר על תוכנית התב\"ע; המליץ על הקמת \"ועדת תב\"ע\" לבחינת השפעות על הסביבה (ישיבה 07/25).",
+        "expected_source_files": ["07.25", "7.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 7,
+        "category": "specific",
+        "question": "מי הציג את סקירת סכנות השריפות ביישוב?",
+        "golden_answer": "יניב שלום, סגן ומ\"מ רבש\"ץ ריחן, הציג את הסקירה (ישיבה 14/25).",
+        "expected_source_files": ["14.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+
+    # =====================================================================
+    # Round 8: Yes/No decisions — tests binary answer correctness.
+    # =====================================================================
+    {
+        "round": 8,
+        "category": "specific",
+        "question": "האם תקציב 2025 של היישוב אושר באסיפה הכללית שב-09/02?",
+        "golden_answer": "לא. תקציב 2025 לא עבר את אישור האסיפה הכללית ב-09/02, ולכן מונתה ועדת תקציב מיוחדת (ישיבה 05/25).",
+        "expected_source_files": ["5.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 8,
+        "category": "specific",
+        "question": "האם הוועד אישר פה אחד את צו הארנונה לשנת 2026?",
+        "golden_answer": "כן. צו הארנונה אושר פה אחד בישיבה 13/25 (03.06.25), כולל התייקרות של 1.626%.",
+        "expected_source_files": ["13.25"],
+        "expected_section_types": ["Topic Discussion"],
+    },
+    {
+        "round": 8,
+        "category": "specific",
+        "question": "האם הוכרה ההיעדרות של מנהלת הפעוטון כתאונת עבודה?",
+        "golden_answer": "לא. הוועד החליט שלא מדובר בתאונת עבודה, מכיוון שהיציאה מהיישוב הייתה ללא אישור וללא ידיעה (ישיבה 01/25).",
+        "expected_source_files": ["1.25"],
+        "expected_section_types": ["Topic Discussion"],
     },
 ]
 
