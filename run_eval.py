@@ -5,6 +5,7 @@ import sys
 import webbrowser
 from datetime import datetime, timezone
 
+from build_eval import build_eval_set
 from src.settings import Settings
 from src.logger import AppLogger
 from src.models import EvalSet, EvalReport, CategoryReport
@@ -54,7 +55,11 @@ def main():
 
     logger = AppLogger(level=config.LOG_LEVEL).get()
 
-    # Load eval set
+    # Rebuild the eval set from the current question bank before scoring.
+    logger.info("Rebuilding eval set from current _QUESTIONS before evaluation.")
+    build_eval_set(output_path="eval_set.json")
+
+    # Load fresh eval set
     eval_set = _load_eval_set("eval_set.json")
     logger.info("Loaded eval set: %d items", eval_set.total_items)
 
@@ -163,8 +168,9 @@ def main():
     print(f"\n  Report:    {report_path}")
     print(f"  Dashboard: {dashboard_path}")
 
-    # Open dashboard in browser
-    webbrowser.open(os.path.abspath(dashboard_path))
+    # Open dashboard unless explicitly disabled for automated or headless runs.
+    if os.getenv("PROTOKAL_OPEN_DASHBOARD", "1") == "1":
+        webbrowser.open(os.path.abspath(dashboard_path))
 
 
 if __name__ == "__main__":

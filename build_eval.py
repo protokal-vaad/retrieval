@@ -487,14 +487,15 @@ def _save_eval_set(items: list[EvalItem], output_path: str, logger: logging.Logg
     print(f"\nEval set saved to: {output_path}")
 
 
-def main():
-    sys.stdout.reconfigure(encoding="utf-8")
+def build_eval_set(output_path: str = "eval_set.json", questions: list[dict] | None = None) -> EvalSet:
+    """Build a fresh eval set from the current question bank and save it to disk."""
     config = Settings()
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS
 
     logger = AppLogger(level=config.LOG_LEVEL).get()
-    logger.info("Building RAG evaluation set — %d questions across 6 categories.", len(_QUESTIONS))
+    selected_questions = questions or _QUESTIONS
+    logger.info("Building RAG evaluation set from question bank (%d questions).", len(selected_questions))
 
     retriever = FirestoreRetriever(
         sa_path=config.GOOGLE_APPLICATION_CREDENTIALS,
@@ -515,6 +516,18 @@ def main():
     )
     agent.setup()
 
+    items = _run_questions(agent, selected_questions, logger)
+    _save_eval_set(items, output_path, logger)
+
+    return EvalSet(
+        created_at=datetime.now(timezone.utc).isoformat(),
+        total_items=len(items),
+        items=items,
+    )
+
+
+def main():
+    sys.stdout.reconfigure(encoding="utf-8")
     # Print category breakdown
     from collections import Counter
     cats = Counter(q["category"] for q in _QUESTIONS)
@@ -523,10 +536,9 @@ def main():
     print(f"  Categories: {dict(cats)}")
     print(f"{'=' * 70}\n")
 
-    items = _run_questions(agent, _QUESTIONS, logger)
-    _save_eval_set(items, "eval_set.json", logger)
+    eval_set = build_eval_set()
 
-    print(f"\nDone — {len(items)} questions processed.")
+    print(f"\nDone — {eval_set.total_items} questions processed.")
     print("Next step: review eval_set.json and validate golden answers.")
 
 
