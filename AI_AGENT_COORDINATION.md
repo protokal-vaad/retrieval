@@ -68,24 +68,20 @@ Main files:
 
 ## Current Task List
 
-1. Review and tune retrieval expectations for broad questions.
-The current benchmark is still strict in some broad cases.
-Some broad questions retrieve agenda/header chunks across multiple meetings, which may be operationally useful but are currently scored harshly.
-Decide whether to adjust the evaluator, the question metadata, or both, and verify the choice with small smoke runs.
+1. Validate the remaining scoring heuristics on more real Hebrew cases.
+Broad retrieval and several edge-case checks were tightened, but specificity and some judge-driven paths still need more confidence.
+Focus on false positives and false negatives before changing the benchmark structure again.
+Keep each validation pass small and explicit.
 
-2. Tighten the remaining edge-case heuristics.
-`cross_protocol` is better now, but `no_answer` and `ambiguous` are still somewhat coarse.
-Make the edge-case checks better at distinguishing graceful uncertainty from weak or overconfident answers.
-Keep the heuristics lightweight enough to run regularly.
+2. Add a reusable way to run representative eval slices.
+Full `run_eval.py` runs are expensive, and ad-hoc shell overrides are too brittle.
+Create a supported path for running a small subset of questions by category, round, or explicit IDs.
+This should make regression checks faster and more repeatable.
 
-3. Run controlled representative eval slices after each scoring change.
-Use a small set of broad, specific, no-answer, cross-protocol, and specificity questions.
-Verify that scores stay on a sane 0-100 scale and that the outputs reflect real system behavior.
-Do not rely only on one full run at the end.
-
-4. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance.
+3. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance.
 The long-term benchmark should support real user questions, human correction, and review metadata.
 The source of truth should be structured and reviewable, not only handwritten Python.
+Do this only after the current evaluation flow is stable enough to trust.
 Prepare the design after the current evaluation code is stable enough.
 
 ## Current Active Stage
@@ -98,4 +94,6 @@ Prepare the design after the current evaluation code is stable enough.
 - `2026-04-21 01:56:23 -0700` | `Codex` | `5c0353f` | updated the coordination file after the eval-set rebuild fix
 - `2026-04-21 02:01:47 -0700` | `Codex` | `04f68a9` | fixed evaluator metadata parsing, corrected retrieval score scaling, and tightened cross-protocol edge-case checks
 - `2026-04-21 02:01:59 -0700` | `Codex` | `990e5bb` | updated the coordination file after the evaluator fixes
-- Current place: task 1 in `Current Task List`, reviewing broad-question retrieval expectations before tightening the remaining edge-case heuristics
+- `2026-04-21 02:12:39 -0700` | `Codex` | `9ba2e2a` | restructured the coordination file into a dynamic task list plus a historical `Current Active Stage`
+- `2026-04-21 02:52:51 -0700` | `Codex` | `eaad35d` | tuned broad-question retrieval scoring and tightened `no_answer`, `cross_protocol`, and `ambiguous` heuristics with targeted smoke checks
+- Current place: task 1 in `Current Task List`, validating the remaining heuristics before adding a reusable slice runner
