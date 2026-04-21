@@ -1,4 +1,4 @@
-"""Edge Case Evaluator â€” tests no-answer, cross-protocol, specificity, and ambiguous handling."""
+"""Edge Case Evaluator — tests no-answer, cross-protocol, specificity, and ambiguous handling."""
 import logging
 import re
 from typing import List
@@ -8,23 +8,43 @@ from src.models import CategoryReport, EdgeCaseResult, EvalItem
 from src.retriever import FirestoreRetriever
 
 
+# Phrases that indicate the system correctly declined to answer.
 _REFUSAL_PHRASES = [
-    "××™×Ÿ ×œ×™ ×ž×¡×¤×™×§ ×ž×™×“×¢",
-    "××™×Ÿ ×ž×™×“×¢",
-    "×œ× × ×ž×¦×",
-    "×œ× × ×“×•×Ÿ",
-    "×œ× ×¢×œ×”",
+    "אין לי מספיק מידע",
+    "אין מידע",
+    "לא נמצא",
+    "לא נדון",
+    "לא עלה",
     "I don't know",
     "I don't have enough information",
-    "××™×Ÿ ×‘×¤×¨×•×˜×•×§×•×œ×™×",
-    "×œ× ×ž×•×¤×™×¢",
-    "××™×Ÿ ×”×ª×™×™×—×¡×•×ª",
-    "×œ× × ×™×ª×Ÿ ×œ×¢× ×•×ª",
-    "×”×ž×™×“×¢ ××™× ×•",
-    "××™×Ÿ × ×ª×•× ×™×",
+    "אין בפרוטוקולים",
+    "לא מופיע",
+    "אין התייחסות",
+    "לא ניתן לענות",
+    "המידע אינו",
+    "אין נתונים",
+    "לא מוזכר",
 ]
 
 _REFUSAL_RE = re.compile("|".join(re.escape(p) for p in _REFUSAL_PHRASES), re.IGNORECASE)
+
+# Phrases indicating the system asked for clarification (good for ambiguous questions).
+_CAVEAT_PHRASES = [
+    "באופן כללי",
+    "כללי מדי",
+    "חסר מידע",
+    "חסרים נתונים",
+    "קשה לקבוע",
+    "לא ברור",
+    "האם הכוונת",
+    "למה הכוונת",
+    "תוכל למקד",
+    "באיזה נושא",
+    "על איזה",
+    "פרט יותר",
+    "לא ציינת",
+]
+_CAVEAT_RE = re.compile("|".join(re.escape(p) for p in _CAVEAT_PHRASES), re.IGNORECASE)
 
 
 class EdgeCaseEvaluator:
@@ -56,7 +76,8 @@ class EdgeCaseEvaluator:
         has_refusal = bool(_REFUSAL_RE.search(result.answer))
         answer_length = len(result.answer)
         number_count = self._count_number_tokens(result.answer)
-        passed = has_refusal and answer_length <= 320 and number_count <= 4
+        # Tightened: must refuse, be brief, and not hallucinate numbers.
+        passed = has_refusal and answer_length <= 180 and number_count <= 1
 
         return EdgeCaseResult(
             question_id=item.id,
@@ -126,16 +147,20 @@ class EdgeCaseEvaluator:
     def _eval_ambiguous(self, item: EvalItem) -> EdgeCaseResult:
         """Check that the system handles vague questions gracefully."""
         result = self._agent.run(item.question)
-        has_refusal_or_caveat = bool(_REFUSAL_RE.search(result.answer))
+        # Check for both outright refusal and request-for-clarification caveats.
+        has_refusal_or_caveat = bool(
+            _REFUSAL_RE.search(result.answer) or _CAVEAT_RE.search(result.answer)
+        )
         answer_length = len(result.answer)
         number_count = self._count_number_tokens(result.answer)
 
         if has_refusal_or_caveat:
             passed = True
-            detail = "Handled gracefully â€” gave caveated or refusal response"
-        elif answer_length <= 280 and number_count <= 2 and result.source_documents:
+            detail = "Handled gracefully — gave caveated or refusal response"
+        elif answer_length <= 150 and number_count == 0 and result.source_documents:
+            # Allow a short generic contextual answer with no specific numbers.
             passed = True
-            detail = f"Gave bounded contextual answer ({answer_length} chars, {number_count} numeric token(s))"
+            detail = f"Gave brief generic contextual answer ({answer_length} chars, 0 numbers)"
         else:
             passed = False
             detail = (
@@ -183,7 +208,7 @@ class EdgeCaseEvaluator:
             result = self.evaluate_item(item)
             results.append(result)
             self._logger.info(
-                "  Q%d (%s): %s â€” %s",
+                "  Q%d (%s): %s — %s",
                 item.id,
                 item.category,
                 "PASS" if result.passed else "FAIL",
@@ -222,7 +247,7 @@ class EdgeCaseEvaluator:
             status = "fail"
 
         self._logger.info(
-            "Edge case results â€” Pass rate: %.1f%% | Status: %s | Breakdown: %s",
+            "Edge case results — Pass rate: %.1f%% | Status: %s | Breakdown: %s",
             pass_rate * 100,
             status,
             sub_categories,
