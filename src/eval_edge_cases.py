@@ -36,6 +36,16 @@ class EdgeCaseEvaluator:
         self._agent = agent
         self._logger = logger
 
+    @staticmethod
+    def _extract_chunk_metadata(raw_metadata: dict | None) -> dict:
+        """Normalize vector-store metadata into the chunk metadata shape used by evals."""
+        if not raw_metadata:
+            return {}
+        nested = raw_metadata.get("metadata")
+        if isinstance(nested, dict):
+            return nested
+        return raw_metadata
+
     def _eval_no_answer(self, item: EvalItem) -> EdgeCaseResult:
         """Check if the system correctly refuses to answer when there is no relevant info."""
         result = self._agent.run(item.question)
@@ -49,18 +59,28 @@ class EdgeCaseEvaluator:
         )
 
     def _eval_cross_protocol(self, item: EvalItem) -> EdgeCaseResult:
-        """Check if the answer references multiple source files."""
+        """Check if retrieval spans multiple source files and the answer is not a refusal."""
         raw_docs = self._retriever.as_langchain_retriever(k=4).invoke(item.question)
-        source_files = {doc.metadata.get("source_file", "") for doc in raw_docs if doc.metadata}
+        source_files = {
+            self._extract_chunk_metadata(doc.metadata).get("source_file", "")
+            for doc in raw_docs
+            if doc.metadata
+        }
         source_files.discard("")
 
+        result = self._agent.run(item.question)
         multi_source = len(source_files) >= 2
+        has_refusal = bool(_REFUSAL_RE.search(result.answer))
+        passed = multi_source and not has_refusal
 
         return EdgeCaseResult(
             question_id=item.id,
             category="cross_protocol",
-            passed=multi_source,
-            detail=f"Retrieved from {len(source_files)} source(s): {', '.join(list(source_files)[:3])}",
+            passed=passed,
+            detail=(
+                f"Retrieved from {len(source_files)} source(s): {', '.join(sorted(source_files)[:3])} | "
+                f"Refusal: {'yes' if has_refusal else 'no'}"
+            ),
         )
 
     def _eval_specificity(self, item: EvalItem) -> EdgeCaseResult:

@@ -14,6 +14,16 @@ class RetrievalEvaluator:
         self._logger = logger
         self._k = k
 
+    @staticmethod
+    def _extract_chunk_metadata(raw_metadata: dict | None) -> dict:
+        """Normalize vector-store metadata into the chunk metadata shape used by evals."""
+        if not raw_metadata:
+            return {}
+        nested = raw_metadata.get("metadata")
+        if isinstance(nested, dict):
+            return nested
+        return raw_metadata
+
     def evaluate_item(self, item: EvalItem) -> RetrievalScore:
         """Score retrieval quality for a single eval item."""
         # Skip items with no expected sources (no-answer, ambiguous)
@@ -33,7 +43,7 @@ class RetrievalEvaluator:
         relevant_count = 0
 
         for rank, doc in enumerate(raw_docs, start=1):
-            metadata = doc.metadata or {}
+            metadata = self._extract_chunk_metadata(doc.metadata)
             source_file = metadata.get("source_file", "")
             section_type = metadata.get("section_type", "")
 
@@ -96,8 +106,8 @@ class RetrievalEvaluator:
         mrr = sum(s.reciprocal_rank for s in scores) / len(scores)
         avg_precision = sum(s.precision for s in scores) / len(scores)
 
-        # Overall score: weighted average (hit_rate most important)
-        overall = (hit_rate * 50 + mrr * 30 + avg_precision * 20) * 100
+        # Overall score: weighted average on a 0-100 scale.
+        overall = hit_rate * 50 + mrr * 30 + avg_precision * 20
 
         # Status thresholds
         if hit_rate >= 0.80 and mrr >= 0.60:
