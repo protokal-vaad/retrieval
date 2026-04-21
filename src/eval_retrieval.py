@@ -24,6 +24,19 @@ class RetrievalEvaluator:
             return nested
         return raw_metadata
 
+    @staticmethod
+    def _effective_section_types(item: EvalItem) -> set[str]:
+        """Return the acceptable section types for this eval item."""
+        section_types = set(item.expected_section_types)
+
+        # Broad and cross-protocol questions often summarize topics across 
+        # multiple meetings, so agenda/headers and closing/decisions are useful too.
+        if item.category in ("broad", "cross_protocol"):
+            section_types.add("Header and Agenda")
+            section_types.add("Closing and Decisions")
+
+        return section_types
+
     def evaluate_item(self, item: EvalItem) -> RetrievalScore:
         """Score retrieval quality for a single eval item."""
         # Skip items with no expected sources (no-answer, ambiguous)
@@ -42,6 +55,8 @@ class RetrievalEvaluator:
         first_relevant_rank = 0
         relevant_count = 0
 
+        allowed_section_types = self._effective_section_types(item)
+
         for rank, doc in enumerate(raw_docs, start=1):
             metadata = self._extract_chunk_metadata(doc.metadata)
             source_file = metadata.get("source_file", "")
@@ -57,13 +72,13 @@ class RetrievalEvaluator:
                         break
 
             # Check section type match (if no source files specified, use section types)
-            if not item.expected_source_files and item.expected_section_types:
-                if section_type in item.expected_section_types:
+            if not item.expected_source_files and allowed_section_types:
+                if section_type in allowed_section_types:
                     is_relevant = True
 
             # If both are specified, require section type match too
-            if item.expected_source_files and item.expected_section_types and is_relevant:
-                if section_type not in item.expected_section_types:
+            if item.expected_source_files and allowed_section_types and is_relevant:
+                if section_type not in allowed_section_types:
                     is_relevant = False
 
             if is_relevant:

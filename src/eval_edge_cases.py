@@ -1,28 +1,27 @@
-"""Edge Case Evaluator — tests no-answer, cross-protocol, specificity, and ambiguous handling."""
+"""Edge Case Evaluator â€” tests no-answer, cross-protocol, specificity, and ambiguous handling."""
 import logging
 import re
 from typing import List
 
-from src.models import EvalItem, EdgeCaseResult, CategoryReport
-from src.retriever import FirestoreRetriever
 from src.agent import RAGAgent
+from src.models import CategoryReport, EdgeCaseResult, EvalItem
+from src.retriever import FirestoreRetriever
 
 
-# Phrases that indicate the system correctly refuses to answer
 _REFUSAL_PHRASES = [
-    "אין לי מספיק מידע",
-    "אין מידע",
-    "לא נמצא",
-    "לא נדון",
-    "לא עלה",
+    "××™×Ÿ ×œ×™ ×ž×¡×¤×™×§ ×ž×™×“×¢",
+    "××™×Ÿ ×ž×™×“×¢",
+    "×œ× × ×ž×¦×",
+    "×œ× × ×“×•×Ÿ",
+    "×œ× ×¢×œ×”",
     "I don't know",
     "I don't have enough information",
-    "אין בפרוטוקולים",
-    "לא מופיע",
-    "אין התייחסות",
-    "לא ניתן לענות",
-    "המידע אינו",
-    "אין נתונים",
+    "××™×Ÿ ×‘×¤×¨×•×˜×•×§×•×œ×™×",
+    "×œ× ×ž×•×¤×™×¢",
+    "××™×Ÿ ×”×ª×™×™×—×¡×•×ª",
+    "×œ× × ×™×ª×Ÿ ×œ×¢× ×•×ª",
+    "×”×ž×™×“×¢ ××™× ×•",
+    "××™×Ÿ × ×ª×•× ×™×",
 ]
 
 _REFUSAL_RE = re.compile("|".join(re.escape(p) for p in _REFUSAL_PHRASES), re.IGNORECASE)
@@ -46,20 +45,32 @@ class EdgeCaseEvaluator:
             return nested
         return raw_metadata
 
+    @staticmethod
+    def _count_number_tokens(text: str) -> int:
+        """Count concrete numeric tokens in an answer."""
+        return len(re.findall(r"[\d,./%-]+", text))
+
     def _eval_no_answer(self, item: EvalItem) -> EdgeCaseResult:
         """Check if the system correctly refuses to answer when there is no relevant info."""
         result = self._agent.run(item.question)
         has_refusal = bool(_REFUSAL_RE.search(result.answer))
+        answer_length = len(result.answer)
+        number_count = self._count_number_tokens(result.answer)
+        passed = has_refusal and answer_length <= 320 and number_count <= 4
 
         return EdgeCaseResult(
             question_id=item.id,
             category="no_answer",
-            passed=has_refusal,
-            detail=f"{'Correctly refused' if has_refusal else 'Failed to refuse — answered with: ' + result.answer[:150]}",
+            passed=passed,
+            detail=(
+                "Correctly refused"
+                if passed
+                else f"Refusal: {'yes' if has_refusal else 'no'} | Length: {answer_length} | Numbers: {number_count}"
+            ),
         )
 
     def _eval_cross_protocol(self, item: EvalItem) -> EdgeCaseResult:
-        """Check if retrieval spans multiple source files and the answer is not a refusal."""
+        """Check if retrieval spans multiple source files and the answer shows actual synthesis."""
         raw_docs = self._retriever.as_langchain_retriever(k=4).invoke(item.question)
         source_files = {
             self._extract_chunk_metadata(doc.metadata).get("source_file", "")
@@ -71,7 +82,8 @@ class EdgeCaseEvaluator:
         result = self._agent.run(item.question)
         multi_source = len(source_files) >= 2
         has_refusal = bool(_REFUSAL_RE.search(result.answer))
-        passed = multi_source and not has_refusal
+        answer_length = len(result.answer)
+        passed = multi_source and not has_refusal and answer_length >= 80
 
         return EdgeCaseResult(
             question_id=item.id,
@@ -79,7 +91,7 @@ class EdgeCaseEvaluator:
             passed=passed,
             detail=(
                 f"Retrieved from {len(source_files)} source(s): {', '.join(sorted(source_files)[:3])} | "
-                f"Refusal: {'yes' if has_refusal else 'no'}"
+                f"Refusal: {'yes' if has_refusal else 'no'} | Length: {answer_length}"
             ),
         )
 
@@ -95,20 +107,13 @@ class EdgeCaseEvaluator:
                 detail="No golden_answer provided for specificity check",
             )
 
-        # Extract numbers and key terms from golden answer to verify
-        golden_lower = item.golden_answer.lower()
-        answer_lower = result.answer.lower()
-
-        # Extract numbers from golden answer
         golden_numbers = re.findall(r"[\d,]+", item.golden_answer)
         matched_numbers = sum(1 for n in golden_numbers if n in result.answer)
 
-        # Simple keyword overlap check
-        golden_words = set(re.findall(r"[\u0590-\u05FF]+", item.golden_answer))  # Hebrew words
+        golden_words = set(re.findall(r"[\u0590-\u05FF]+", item.golden_answer))
         answer_words = set(re.findall(r"[\u0590-\u05FF]+", result.answer))
         word_overlap = len(golden_words & answer_words) / len(golden_words) if golden_words else 0
 
-        # Pass if numbers match OR high word overlap
         passed = (golden_numbers and matched_numbers == len(golden_numbers)) or word_overlap >= 0.6
 
         return EdgeCaseResult(
@@ -119,26 +124,24 @@ class EdgeCaseEvaluator:
         )
 
     def _eval_ambiguous(self, item: EvalItem) -> EdgeCaseResult:
-        """Check that the system handles vague questions gracefully (no hallucination)."""
+        """Check that the system handles vague questions gracefully."""
         result = self._agent.run(item.question)
-
-        # For ambiguous questions, the answer should either:
-        # 1. Ask for clarification
-        # 2. Give a general overview based on context
-        # 3. Not hallucinate specific numbers/dates that aren't in context
-        # We check: does the answer reference actual context (good) vs. invent specific claims?
-
         has_refusal_or_caveat = bool(_REFUSAL_RE.search(result.answer))
         answer_length = len(result.answer)
+        number_count = self._count_number_tokens(result.answer)
 
-        # Short answers or refusals are fine for ambiguous questions
-        if has_refusal_or_caveat or answer_length < 100:
+        if has_refusal_or_caveat:
             passed = True
-            detail = "Handled gracefully — gave brief or caveated response"
+            detail = "Handled gracefully â€” gave caveated or refusal response"
+        elif answer_length <= 280 and number_count <= 2 and result.source_documents:
+            passed = True
+            detail = f"Gave bounded contextual answer ({answer_length} chars, {number_count} numeric token(s))"
         else:
-            # Long answer is acceptable if it comes from actual sources
-            passed = result.source_documents and len(result.source_documents) > 0
-            detail = f"Gave detailed response ({answer_length} chars) with {len(result.source_documents)} sources"
+            passed = False
+            detail = (
+                f"Too specific for ambiguous query ({answer_length} chars, {number_count} numeric token(s), "
+                f"{len(result.source_documents)} sources)"
+            )
 
         return EdgeCaseResult(
             question_id=item.id,
@@ -179,7 +182,13 @@ class EdgeCaseEvaluator:
         for item in scorable:
             result = self.evaluate_item(item)
             results.append(result)
-            self._logger.info("  Q%d (%s): %s — %s", item.id, item.category, "PASS" if result.passed else "FAIL", result.detail[:80])
+            self._logger.info(
+                "  Q%d (%s): %s â€” %s",
+                item.id,
+                item.category,
+                "PASS" if result.passed else "FAIL",
+                result.detail[:80],
+            )
 
         if not results:
             return CategoryReport(
@@ -192,7 +201,6 @@ class EdgeCaseEvaluator:
 
         pass_rate = sum(1 for r in results if r.passed) / len(results)
 
-        # Per-subcategory breakdown
         sub_categories = {}
         for cat in edge_categories:
             cat_results = [r for r in results if r.category == cat]
@@ -214,8 +222,10 @@ class EdgeCaseEvaluator:
             status = "fail"
 
         self._logger.info(
-            "Edge case results — Pass rate: %.1f%% | Status: %s | Breakdown: %s",
-            pass_rate * 100, status, sub_categories,
+            "Edge case results â€” Pass rate: %.1f%% | Status: %s | Breakdown: %s",
+            pass_rate * 100,
+            status,
+            sub_categories,
         )
 
         return CategoryReport(
