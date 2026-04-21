@@ -106,7 +106,7 @@ Preferred design direction:
 
 ## Current Active Stage
 
-Commit: `5822818`
+Commit: `04f68a9`
 Agent: `Codex`
-Status: stabilized the eval data contract so `run_eval.py` rebuilds a fresh eval set from `_QUESTIONS` before scoring
-- Next: review the scoring heuristics, especially retrieval for broad questions and edge-case quality checks
+Status: fixed evaluator metadata parsing, corrected retrieval score scaling, and tightened cross-protocol edge-case checks
+- Next: review broad-question retrieval expectations and improve the remaining edge-case heuristics where the logic is still too coarse
