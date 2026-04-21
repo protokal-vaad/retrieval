@@ -68,12 +68,15 @@ Main files:
 
 ## Current Task List
 
-1. Run controlled representative eval slices after each scoring change.
+1. Establish current baseline and implement dashboard.
+Do not change the scoring mechanism yet. First, close the full evaluation cycle using the *existing* scoring rules. Implement and connect the existing dashboard infrastructure so we can get a clear snapshot of the system's answer quality as it is right now. 
+
+2. Run controlled representative eval slices after each scoring change. (Start only after Task 1 is complete).
 Use a small set of broad, specific, no-answer, cross-protocol, and specificity questions.
 Verify that scores stay on a sane 0-100 scale and that the outputs reflect real system behavior.
 Do not rely only on one full run at the end.
 
-2. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance.
+3. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance.
 The long-term benchmark should support real user questions, human correction, and review metadata.
 The source of truth should be structured and reviewable, not only handwritten Python.
 Prepare the design after the current evaluation code is stable enough.
@@ -91,4 +94,5 @@ Prepare the design after the current evaluation code is stable enough.
 - `2026-04-21 02:52:51 -0700` | `Codex` | `eaad35d` | tuned broad-question retrieval scoring and tightened `no_answer`, `cross_protocol`, and `ambiguous` heuristics with targeted smoke checks
 - `2026-04-21 02:57:10 -0700` | `Antigravity` | `6fd7182` | tuned broad/cross_protocol retrieval section-type expectations; tightened no_answer (≤180 chars, ≤1 number) and ambiguous (added _CAVEAT_RE, ≤150 chars, 0 numbers) heuristics
 - `2026-04-21 03:12:06 -0700` | `Antigravity` | `71c8507` | codebase audit complete — all 15 files syntax-checked, create_index.py wrapped in main(), .gitignore extended to exclude generated outputs and scratch files, eval_set.json untracked
-- Current place: task 1 in `Current Task List` — run controlled eval slices to validate scoring changes
+- `2026-04-21 15:40:00 +0300` | `manual` | `Human` | reprioritized tasks: pause scoring changes, establish baseline with full evaluation cycle, and implement dashboard infrastructure
+- Current place: task 1 in `Current Task List` — run full evaluation with existing scoring and connect the dashboard
