@@ -1,6 +1,6 @@
 # AI Agent Coordination
 
-Last updated: 2026-04-21
+Last updated: 2026-04-23
 Repository: `C:\Users\CCSV\Desktop\Projects\protokal\retrieval`
 
 ## Purpose
@@ -68,18 +68,31 @@ Main files:
 
 ## Current Task List
 
-1. Establish current baseline and implement dashboard.
-Do not change the scoring mechanism yet. First, close the full evaluation cycle using the *existing* scoring rules. Implement and connect the existing dashboard infrastructure so we can get a clear snapshot of the system's answer quality as it is right now. 
+1. Capture the first full baseline on all 53 current questions.
+Run `run_eval.py` without `PROTOKAL_SAMPLE_PER_CATEGORY` so the system rebuilds `eval_set.json` from the full `_QUESTIONS` bank and produces fresh `eval_report.json` / `eval_dashboard.html`.
+Do not change scoring logic during this baseline capture.
+After the run completes, record the final overall score and the four category scores in this coordination file.
 
-2. Run controlled representative eval slices after each scoring change. (Start only after Task 1 is complete).
-Use a small set of broad, specific, no-answer, cross-protocol, and specificity questions.
-Verify that scores stay on a sane 0-100 scale and that the outputs reflect real system behavior.
+2. Turn the latest smoke-run result into an explicit scoring work queue before changing code.
+The latest representative smoke run already completed successfully on 12 questions and exposed the main weak area: `edge_cases` failed at 37.5.
+Break the follow-up work into these three sub-problems:
+- `no_answer`: the system still answers too much or includes too many concrete details when it should refuse.
+- `ambiguous`: the system gives overly specific answers instead of caveating, asking for clarification, or staying high-level.
+- `cross_protocol`: one sampled question still failed because the answer behavior did not match the intended multi-protocol synthesis test.
+Before editing heuristics or prompts, confirm for each failure whether the problem is in product behavior, evaluator logic, or benchmark definition.
+
+3. After each scoring or prompt change, run a representative smoke slice again and compare it against the current baseline.
+Use `PROTOKAL_SAMPLE_PER_CATEGORY=2` unless a different slice is explicitly needed.
+Check that scores stay on a sane 0-100 scale, that the intended failure mode improves, and that the dashboard still explains the fresh outputs clearly.
 Do not rely only on one full run at the end.
 
-3. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance.
+4. Tighten the question-bank contract only when an evaluation issue reveals a concrete benchmark mismatch.
+Review `_QUESTIONS` for category fit, `golden_answer` quality, and retrieval expectations whenever a scoring problem suggests the benchmark itself is underspecified.
+The recent wording cleanup in `build_eval.py` was intentionally small and local; continue in that style only when a concrete mismatch is found.
+
+5. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance after the scoring flow is stable enough.
 The long-term benchmark should support real user questions, human correction, and review metadata.
 The source of truth should be structured and reviewable, not only handwritten Python.
-Prepare the design after the current evaluation code is stable enough.
 
 ## Current Active Stage
 
@@ -95,4 +108,7 @@ Prepare the design after the current evaluation code is stable enough.
 - `2026-04-21 02:57:10 -0700` | `Antigravity` | `6fd7182` | tuned broad/cross_protocol retrieval section-type expectations; tightened no_answer (≤180 chars, ≤1 number) and ambiguous (added _CAVEAT_RE, ≤150 chars, 0 numbers) heuristics
 - `2026-04-21 03:12:06 -0700` | `Antigravity` | `71c8507` | codebase audit complete — all 15 files syntax-checked, create_index.py wrapped in main(), .gitignore extended to exclude generated outputs and scratch files, eval_set.json untracked
 - `2026-04-21 15:40:00 +0300` | `manual` | `Human` | reprioritized tasks: pause scoring changes, establish baseline with full evaluation cycle, and implement dashboard infrastructure
-- Current place: task 1 in `Current Task List` — run full evaluation with existing scoring and connect the dashboard
+- `2026-04-22 07:35:00 +0300` | `uncommitted` | `Claude Code` | added `sample_per_category(n)` helper to `build_eval.py` and wired `PROTOKAL_SAMPLE_PER_CATEGORY` env var into `run_eval.py` to support low-cost smoke runs; verified end-to-end pipeline on a 12-question sample (2 per category) — generated `eval_report.json` and `eval_dashboard.html` for the first time. Sample results: overall 76.7/100, retrieval 76.2 (pass), answer 92.5 (pass), chunking 93.1 (pass), edge_cases 37.5 (fail — ambiguous 0/2 and no_answer 0/2 are the regressions; cross_protocol 2/2, specificity 1/2). No scoring changes were made.
+- `2026-04-23 04:49:24 -0700` | `uncommitted` | `Codex` | rewrote `src/dashboard.py` into a client-facing work document that explains the tests, ties table fields to metrics, and turns the question grid into a collaborative benchmark worksheet
+- `2026-04-23 05:24:20 -0700` | `uncommitted` | `Codex` | validated the redesigned dashboard on a fresh 12-question smoke run and lightly tightened several benchmark question wordings in `build_eval.py`
+- Current place: sample run completed successfully on fresh outputs. Current sample scores are overall 76.7, retrieval 76.2, answer 92.5, chunking 93.1, edge_cases 37.5. Next: capture the first full 53-question baseline with no scoring changes, then use that baseline to drive edge-case tuning.

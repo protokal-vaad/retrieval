@@ -1,0 +1,363 @@
+{
+  "version": "1.0",
+  "created_at": "2026-04-23T12:24:20.662965+00:00",
+  "categories": [
+    {
+      "category": "retrieval",
+      "score": 76.2,
+      "status": "pass",
+      "metrics": {
+        "hit_rate": 0.875,
+        "mrr": 0.729,
+        "precision": 0.531,
+        "evaluated_count": 8
+      },
+      "details": [
+        {
+          "question_id": 1,
+          "hit": true,
+          "reciprocal_rank": 1.0,
+          "precision": 1.0
+        },
+        {
+          "question_id": 2,
+          "hit": true,
+          "reciprocal_rank": 0.5,
+          "precision": 0.5
+        },
+        {
+          "question_id": 3,
+          "hit": true,
+          "reciprocal_rank": 1.0,
+          "precision": 0.25
+        },
+        {
+          "question_id": 4,
+          "hit": true,
+          "reciprocal_rank": 1.0,
+          "precision": 0.25
+        },
+        {
+          "question_id": 7,
+          "hit": true,
+          "reciprocal_rank": 1.0,
+          "precision": 1.0
+        },
+        {
+          "question_id": 8,
+          "hit": true,
+          "reciprocal_rank": 1.0,
+          "precision": 1.0
+        },
+        {
+          "question_id": 9,
+          "hit": false,
+          "reciprocal_rank": 0.0,
+          "precision": 0.0
+        },
+        {
+          "question_id": 10,
+          "hit": true,
+          "reciprocal_rank": 0.3333333333333333,
+          "precision": 0.25
+        }
+      ]
+    },
+    {
+      "category": "answer",
+      "score": 92.5,
+      "status": "pass",
+      "metrics": {
+        "faithfulness_avg": 5.0,
+        "relevance_avg": 4.75,
+        "completeness_avg": 4.0,
+        "completeness_count": 4,
+        "evaluated_count": 8
+      },
+      "details": [
+        {
+          "question_id": 1,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "כל הטענות בתשובה נתמכות באופן ישיר על ידי המידע שסופק בקונטקסט. התשובה אינה מוסיפה מידע חדש או שאינה מדוי אקשן."
+          },
+          "relevance": {
+            "score": 5,
+            "reasoning": "התשובה מפרטת באופן מלא וישיר את הנושאים שנדונו בישיבות ועד ריחן, כפי שנדרש בשאלה."
+          },
+          "completeness": null
+        },
+        {
+          "question_id": 2,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "כל הטענות בתשובה נתמכות באופן ישיר ומדויק על ידי המידע שהוצג בקונטקסט."
+          },
+          "relevance": {
+            "score": 5,
+            "reasoning": "התשובה מפרטת את תאריכי ישיבות הוועד ואת סדר היום של כל אחת מהן, כפי שנדרש בשאלה."
+          },
+          "completeness": null
+        },
+        {
+          "question_id": 3,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "כל הטענות בתשובה נתמכות באופן ישיר מהקונטקסט המצורף."
+          },
+          "relevance": {
+            "score": 5,
+            "reasoning": "התשובה מתייחסת באופן מלא וישיר לשאלה, כולל הבהרה לגבי המקורות ותאריך הישיבה."
+          },
+          "completeness": {
+            "score": 3,
+            "missing_facts": [
+              "לקצץ 150,000 ₪",
+              "להעביר לתקציב חינוך בלתי פורמלי"
+            ]
+          }
+        },
+        {
+          "question_id": 4,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "התשובה מבוססת באופן ישיר ובמלואה על החלטות המופיעות בסעיף 2.3 בטקסט שסופק."
+          },
+          "relevance": {
+            "score": 5,
+            "reasoning": "התשובה עונה באופן מלא וישיר על השאלה."
+          },
+          "completeness": {
+            "score": 4,
+            "missing_facts": [
+              "(ישיבה 04/25)"
+            ]
+          }
+        },
+        {
+          "question_id": 7,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "כל הטענות בתשובה נתמכות באופן ישיר על ידי המידע בקונטקסט שסופק."
+          },
+          "relevance": {
+            "score": 5,
+            "reasoning": "התשובה מפרטת באופן מלא וישיר את כל ההחלטות שהתקבלו בנושא גינון, כפי שנדרש בשאלה."
+          },
+          "completeness": null
+        },
+        {
+          "question_id": 8,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "כל הטענות בתשובה נתמכות באופן ישיר על ידי המידע בקטע הקונטקסטואלי המסופק."
+          },
+          "relevance": {
+            "score": 3,
+            "reasoning": "התשובה מתארת את המצב התקציבי הנוכחי ואת הגורמים לו, ואף מציינת שיפור בתזרים, אך אינה משווה באופן מפורש את השינויים שהתרחשו בין ישיבה לישיבה כפי שנדרש בשאלה."
+          },
+          "completeness": null
+        },
+        {
+          "question_id": 9,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "כל טענה בתשובה נתמכת ישירות בטקסט שסופק (\"פירוט - פיתוח - 642,331 ש\"ח\"). העמדה של המסמך הזה הייתה שהיה סכום מסוים בחשבון הפיתוח וזה מה שהתשובה הציגה. העובדה שקיים נתון עדכני יותר בחלק אחר של המסמך אינה סותרת את העובדה שהנתון הספציפי שהוצג בתשובה אכן מופיע במסמך."
+          },
+          "relevance": {
+            "score": 5,
+            "reasoning": "התשובה עונה באופן מלא וישיר על השאלה."
+          },
+          "completeness": {
+            "score": 5,
+            "missing_facts": []
+          }
+        },
+        {
+          "question_id": 10,
+          "faithfulness": {
+            "score": 5,
+            "reasoning": "התשובה נתמכת באופן מלא וישיר במידע הקיים בפרוטוקול הישיבה מתאריך 30.03.25, שם מצוין שיצחק בוכניק היה יו\"ר הוועד המקומי."
+          },
+          "relevance": {
+            "score": 5,
+            "reasoning": "התשובה עונה באופן מלא וישיר על השאלה."
+          },
+          "completeness": {
+            "score": 4,
+            "missing_facts": [
+              "ישיבה 08/25"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "category": "chunking",
+      "score": 93.1,
+      "status": "pass",
+      "metrics": {
+        "total_chunks": 667,
+        "total_files": 116,
+        "total_issues": 13,
+        "clean_file_rate": 0.931,
+        "issues_by_type": {
+          "empty_content": 7,
+          "missing_metadata": 1,
+          "bad_section_dist": 4,
+          "bad_chunk_count": 1
+        }
+      },
+      "details": [
+        {
+          "source_file": "20.03.24.docx",
+          "issue_type": "empty_content",
+          "detail": "Chunk content too short (48 chars < 50)"
+        },
+        {
+          "source_file": "24.08.22.docx",
+          "issue_type": "empty_content",
+          "detail": "Chunk content too short (47 chars < 50)"
+        },
+        {
+          "source_file": "9.03.22.docx",
+          "issue_type": "empty_content",
+          "detail": "Chunk content too short (42 chars < 50)"
+        },
+        {
+          "source_file": "9.03.22.docx",
+          "issue_type": "empty_content",
+          "detail": "Chunk content too short (48 chars < 50)"
+        },
+        {
+          "source_file": "test_verification.pdf",
+          "issue_type": "missing_metadata",
+          "detail": "Invalid section_type: 'Verification Test'"
+        },
+        {
+          "source_file": "פרוטוקול ועד ריחן 18-25 27.07.2025_1.docx",
+          "issue_type": "empty_content",
+          "detail": "Chunk content too short (38 chars < 50)"
+        },
+        {
+          "source_file": "פרוטוקול ועד 45.24_2.pdf",
+          "issue_type": "empty_content",
+          "detail": "Chunk content too short (49 chars < 50)"
+        },
+        {
+          "source_file": "פרוטוקול ועד מנהל ריחן 19-25  10.08.docx",
+          "issue_type": "empty_content",
+          "detail": "Chunk content too short (38 chars < 50)"
+        },
+        {
+          "source_file": "data_ריחן.docx",
+          "issue_type": "bad_section_dist",
+          "detail": "Multiple 'Header and Agenda' chunks (5)"
+        },
+        {
+          "source_file": "data_ריחן.docx",
+          "issue_type": "bad_section_dist",
+          "detail": "Multiple 'Closing and Decisions' chunks (5)"
+        },
+        {
+          "source_file": "test_verification.pdf",
+          "issue_type": "bad_section_dist",
+          "detail": "Missing 'Header and Agenda' chunk"
+        },
+        {
+          "source_file": "test_verification.pdf",
+          "issue_type": "bad_section_dist",
+          "detail": "No 'Topic Discussion' chunks found"
+        },
+        {
+          "source_file": "test_verification.pdf",
+          "issue_type": "bad_chunk_count",
+          "detail": "Too few chunks (1 < 2)"
+        }
+      ]
+    },
+    {
+      "category": "edge_cases",
+      "score": 37.5,
+      "status": "fail",
+      "metrics": {
+        "pass_rate": 0.375,
+        "evaluated_count": 8,
+        "subcategories": {
+          "specificity": {
+            "pass_rate": 1.0,
+            "total": 2,
+            "passed": 2
+          },
+          "ambiguous": {
+            "pass_rate": 0.0,
+            "total": 2,
+            "passed": 0
+          },
+          "cross_protocol": {
+            "pass_rate": 0.5,
+            "total": 2,
+            "passed": 1
+          },
+          "no_answer": {
+            "pass_rate": 0.0,
+            "total": 2,
+            "passed": 0
+          }
+        }
+      },
+      "details": [
+        {
+          "question_id": 5,
+          "category": "no_answer",
+          "passed": false,
+          "detail": "Refusal: yes | Length: 156 | Numbers: 5"
+        },
+        {
+          "question_id": 6,
+          "category": "no_answer",
+          "passed": false,
+          "detail": "Refusal: no | Length: 57 | Numbers: 2"
+        },
+        {
+          "question_id": 7,
+          "category": "cross_protocol",
+          "passed": true,
+          "detail": "Retrieved from 4 source(s): 22.05.docx, פרוטוקול ועד 16.25_1.pdf(1).docx, פרוטוקול ועד 16.25_1.pdf.docx | Refusal: no | Length: 552"
+        },
+        {
+          "question_id": 8,
+          "category": "cross_protocol",
+          "passed": false,
+          "detail": "Retrieved from 3 source(s): פרוטוקול ועד מנהל ריחן 19-25  10.08.docx, פרוטוקול ועד17.25_1.pdf(1).docx, פרוטוקול ועד17.25_1.pdf.docx | Refusal: yes | Length: 579"
+        },
+        {
+          "question_id": 9,
+          "category": "specificity",
+          "passed": true,
+          "detail": "Numbers matched: 1/1 | Word overlap: 100%"
+        },
+        {
+          "question_id": 10,
+          "category": "specificity",
+          "passed": true,
+          "detail": "Numbers matched: 1/2 | Word overlap: 86%"
+        },
+        {
+          "question_id": 11,
+          "category": "ambiguous",
+          "passed": false,
+          "detail": "Too specific for ambiguous query (1928 chars, 52 numeric token(s), 4 sources)"
+        },
+        {
+          "question_id": 12,
+          "category": "ambiguous",
+          "passed": false,
+          "detail": "Too specific for ambiguous query (991 chars, 30 numeric token(s), 4 sources)"
+        }
+      ]
+    }
+  ],
+  "overall_score": 76.7,
+  "overall_status": "fail"
+}

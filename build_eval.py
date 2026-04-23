@@ -310,7 +310,7 @@ _QUESTIONS: list[dict] = [
     {
         "round": 5,
         "category": "specificity",
-        "question": "מה מספר הטלפון של משרד ועד ריחן?",
+        "question": "מה מספר הטלפון שמופיע בכותרת פרוטוקולי ועד ריחן?",
         "golden_answer": "04-6350257.",
         "expected_section_types": ["Header and Agenda"],
     },
@@ -349,8 +349,8 @@ _QUESTIONS: list[dict] = [
     {
         "round": 5,
         "category": "specificity",
-        "question": "כמה סגרו פרויקטים 2024-2025 חריגה מהתקציב, לפי ישיבה 11/25?",
-        "golden_answer": "כלל הפרויקטים 2024-2025 לא חרגו מתקציב שאושר (ישיבה 11/25).",
+        "question": "בכמה פרויקטים של 2024-2025 דווחה חריגה מהתקציב, לפי ישיבה 11/25?",
+        "golden_answer": "באף פרויקט. לפי ישיבה 11/25, כלל הפרויקטים של 2024-2025 לא חרגו מהתקציב שאושר.",
         "expected_source_files": ["11.25"],
         "expected_section_types": ["Topic Discussion"],
     },
@@ -389,8 +389,8 @@ _QUESTIONS: list[dict] = [
     {
         "round": 7,
         "category": "specific",
-        "question": "מי מילא את תפקיד מזכיר הישיבות בישיבות הוועד ב-2025?",
-        "golden_answer": "אוריאל שקד שימש כמזכיר רוב הישיבות ב-2025.",
+        "question": "מי שימש כמזכיר ברוב ישיבות הוועד בשנת 2025?",
+        "golden_answer": "אוריאל שקד שימש כמזכיר ברוב ישיבות הוועד בשנת 2025.",
         "expected_section_types": ["Header and Agenda"],
     },
     {
@@ -485,6 +485,18 @@ def _save_eval_set(items: list[EvalItem], output_path: str, logger: logging.Logg
         json.dump(eval_set.model_dump(), f, ensure_ascii=False, indent=2)
     logger.info("Eval set saved to %s (%d items)", output_path, len(items))
     print(f"\nEval set saved to: {output_path}")
+
+
+def sample_per_category(n: int) -> list[dict]:
+    """Pick the first N questions from each category for low-cost smoke runs."""
+    from collections import defaultdict
+    by_cat: dict[str, list[dict]] = defaultdict(list)
+    for q in _QUESTIONS:
+        by_cat[q["category"]].append(q)
+    sampled: list[dict] = []
+    for qs in by_cat.values():
+        sampled.extend(qs[:n])
+    return sampled
 
 
 def build_eval_set(output_path: str = "eval_set.json", questions: list[dict] | None = None) -> EvalSet:

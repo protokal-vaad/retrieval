@@ -1,289 +1,482 @@
-"""HTML Dashboard Generator — produces a visual evaluation report with Hebrew explanations."""
+"""HTML dashboard generator for a client-facing RAG evaluation work document."""
+
+from html import escape
+
 from src.models import EvalReport, EvalSet
 
 
-_CATEGORY_LABELS = {
+_CATEGORY_INFO = {
     "retrieval": {
-        "title": "איכות שליפה (Retrieval)",
-        "description": "האם המערכת שולפת את הקטעים הנכונים מהפרוטוקולים? בודק שהתוצאות רלוונטיות לשאלה.",
-        "metrics_help": {
-            "hit_rate": "Hit Rate — באיזה אחוז מהשאלות לפחות תוצאה אחת הייתה רלוונטית",
-            "mrr": "MRR — באיזה מיקום ממוצע מופיעה התוצאה הרלוונטית הראשונה (1.0 = תמיד ראשונה)",
-            "precision": "Precision — איזה אחוז מהתוצאות שנשלפו באמת רלוונטי",
+        "title": "1. בדיקות שליפה",
+        "subtitle": "האם המערכת מביאה את הקטעים הנכונים מהפרוטוקולים לפני שהיא עונה",
+        "why": "אם השליפה לא טובה, גם תשובה שנשמעת טוב יכולה להיות מבוססת על מסמכים לא נכונים.",
+        "score_meaning": "הציון משקף עד כמה השאלה מגיעה למסמך הנכון, כמה מהר הוא מופיע, וכמה מהתוצאות באמת רלוונטיות.",
+        "metric_labels": {
+            "hit_rate": "Hit Rate",
+            "mrr": "MRR",
+            "precision": "Precision",
+            "evaluated_count": "שאלות שנמדדו",
         },
+        "metric_help": {
+            "hit_rate": "באיזה אחוז מהשאלות לפחות אחד מהקטעים שנשלפו היה נכון.",
+            "mrr": "כמה גבוה הופיע הקטע הנכון בתוצאות. גבוה יותר אומר שהשליפה מגיעה מהר לדברים הנכונים.",
+            "precision": "מתוך כל הקטעים שנשלפו, כמה מהם באמת היו רלוונטיים.",
+            "evaluated_count": "לא כל שאלה מודדת שליפה. כאן רואים בכמה שאלות באמת היה יעד שליפה מוגדר.",
+        },
+        "client_fields": [
+            ("expected_source_files", "מגדיר מאילו פרוטוקולים אנחנו מצפים שהמערכת תשלוף מידע."),
+            ("expected_section_types", "מגדיר איזה סוג חלק במסמך אמור להכיל את התשובה."),
+        ],
     },
     "answer": {
-        "title": "איכות תשובות (Answer Quality)",
-        "description": "האם התשובות מדויקות ומבוססות על המידע שנשלף? בודק נאמנות, רלוונטיות ושלמות.",
-        "metrics_help": {
-            "faithfulness_avg": "נאמנות — האם התשובה מבוססת רק על ה-context ולא ממציאה עובדות (1-5)",
-            "relevance_avg": "רלוונטיות — האם התשובה עונה על השאלה שנשאלה (1-5)",
-            "completeness_avg": "שלמות — האם התשובה מכסה את כל המידע הרלוונטי (1-5, רק לשאלות עם golden answer)",
+        "title": "2. בדיקות תשובה",
+        "subtitle": "האם התשובה עצמה נכונה, ממוקדת, ומכסה את מה שחשוב",
+        "why": "המטרה העסקית היא לא רק למצוא מסמך, אלא לתת תשובה שאפשר לסמוך עליה.",
+        "score_meaning": "הציון משלב נאמנות למקור, רלוונטיות לשאלה, ושלמות מול תשובת ייחוס כאשר קיימת.",
+        "metric_labels": {
+            "faithfulness_avg": "נאמנות",
+            "relevance_avg": "רלוונטיות",
+            "completeness_avg": "שלמות",
+            "completeness_count": "שאלות עם תשובת ייחוס",
+            "evaluated_count": "שאלות שנמדדו",
         },
+        "metric_help": {
+            "faithfulness_avg": "האם התשובה נאמנה לטקסט שנשלף, בלי להמציא פרטים.",
+            "relevance_avg": "האם התשובה באמת עונה על השאלה שנשאלה.",
+            "completeness_avg": "כאשר יש תשובת ייחוס, האם התשובה מכסה את כל העובדות החשובות.",
+            "completeness_count": "מספר השאלות שיש להן כרגע תשובת ייחוס ולכן אפשר למדוד בהן שלמות.",
+            "evaluated_count": "כמה שאלות השתתפו במדידת איכות התשובה.",
+        },
+        "client_fields": [
+            ("golden_answer", "זו תשובת הייחוס של הלקוח. היא מה שמאפשר למדוד שלמות ולא רק תחושה כללית."),
+            ("answer", "זו תשובת הבסיס שהמערכת מחזירה כרגע, כדי להשוות שינויים לאורך זמן."),
+        ],
     },
     "chunking": {
-        "title": "איכות חיתוך (Chunking Quality)",
-        "description": "האם הפרוטוקולים חותכו נכון? בודק metadata, מבנה סקציות, קידוד עברית ומספר chunks.",
-        "metrics_help": {
-            "total_chunks": "סך הכל chunks במערכת",
-            "total_files": "מספר קבצים מקור שונים",
-            "total_issues": "מספר בעיות שנמצאו",
-            "clean_file_rate": "אחוז הקבצים ללא בעיות",
+        "title": "3. בדיקות מבנה הנתונים",
+        "subtitle": "האם הפרוטוקולים מפורקים לקטעים בצורה נקייה ושימושית לשליפה",
+        "why": "גם מודל טוב יתקשה אם המסמכים נשמרו עם metadata חסר, קידוד שבור, או חלוקה לא טובה.",
+        "score_meaning": "הציון משקף את שיעור הקבצים הנקיים מבעיות מבנה, metadata ותוכן.",
+        "metric_labels": {
+            "total_chunks": "סה\"כ קטעים",
+            "total_files": "סה\"כ קבצי מקור",
+            "total_issues": "סה\"כ בעיות",
+            "clean_file_rate": "שיעור קבצים נקיים",
         },
+        "metric_help": {
+            "total_chunks": "כמה קטעים קיימים היום בוקטור סטור.",
+            "total_files": "כמה קבצים שונים נסרקו והפכו לקטעים.",
+            "total_issues": "כמה בעיות מבנה נמצאו בכלל הקבצים.",
+            "clean_file_rate": "באיזה אחוז מהקבצים לא נמצאה אף בעיית מבנה.",
+        },
+        "client_fields": [
+            ("source_previews", "נותן תחושת בקרה על הקטעים שהמערכת באמת רואה."),
+        ],
     },
     "edge_cases": {
-        "title": "מקרי קצה (Edge Cases)",
-        "description": "איך המערכת מתמודדת עם שאלות מיוחדות: שאלות שאין עליהן תשובה, שאלות חוצות-פרוטוקולים, שאלות ספציפיות ושאלות עמומות.",
-        "metrics_help": {
-            "pass_rate": "אחוז ההצלחה הכללי במקרי קצה",
+        "title": "4. בדיקות התנהגות מיוחדת",
+        "subtitle": "איך המערכת מתנהגת כששואלים שאלות קשות, עמומות, או בלי תשובה אמיתית",
+        "why": "אלה בדיוק המצבים שפוגעים באמון המשתמש אם המערכת נשמעת בטוחה מדי או מפספסת הקשר.",
+        "score_meaning": "הציון מראה בכמה מהמקרים המיוחדים המערכת התנהגה כמו שהיינו רוצים בעולם אמיתי.",
+        "metric_labels": {
+            "pass_rate": "שיעור הצלחה",
+            "evaluated_count": "שאלות שנמדדו",
         },
+        "metric_help": {
+            "pass_rate": "באיזה אחוז ממקרי הקצה המערכת התנהגה נכון.",
+            "evaluated_count": "כמה שאלות שייכות כרגע למקרי קצה.",
+        },
+        "client_fields": [
+            ("category", "סוג השאלה קובע איזה מבחן התנהגות המערכת צריכה לעבור."),
+        ],
     },
 }
 
-_SUBCATEGORY_LABELS = {
-    "no_answer": "שאלות ללא תשובה — האם המערכת מסרבת לענות כשאין מידע?",
-    "cross_protocol": "שאלות חוצות-פרוטוקולים — האם המערכת שולפת ממספר ישיבות?",
-    "specificity": "שאלות ספציפיות — האם המערכת מחזירה ערכים מדויקים (סכומים, תאריכים)?",
-    "ambiguous": "שאלות עמומות — האם המערכת מתמודדת בצורה סבירה עם שאלות לא ברורות?",
+_QUESTION_CATEGORY_LABELS = {
+    "broad": "שאלה כללית",
+    "specific": "שאלה ספציפית",
+    "no_answer": "שאלה ללא תשובה",
+    "cross_protocol": "שאלה חוצת פרוטוקולים",
+    "specificity": "שאלת ערך מדויק",
+    "ambiguous": "שאלה עמומה",
+}
+
+_QUESTION_CATEGORY_HELP = {
+    "broad": "בודקת האם המערכת יודעת לסכם נושא רחב ממסמכים רלוונטיים.",
+    "specific": "בודקת האם המערכת עונה נכון על החלטה או פרט מוגדר.",
+    "no_answer": "בודקת האם המערכת יודעת להודות שאין מידע במקום להמציא.",
+    "cross_protocol": "בודקת האם המערכת מחברת מידע מכמה ישיבות שונות.",
+    "specificity": "בודקת האם ערכים כמו סכומים, תאריכים ושמות יוצאים בדיוק הנדרש.",
+    "ambiguous": "בודקת האם המערכת מגיבה בזהירות לשאלה כללית מדי.",
+}
+
+_EDGE_SUBCATEGORY_LABELS = {
+    "no_answer": "אין תשובה",
+    "cross_protocol": "חוצה פרוטוקולים",
+    "specificity": "ערך מדויק",
+    "ambiguous": "עמום",
 }
 
 
 def _status_color(status: str) -> str:
-    return {"pass": "#22c55e", "warn": "#f59e0b", "fail": "#ef4444"}.get(status, "#6b7280")
-
-
-def _status_icon(status: str) -> str:
-    return {"pass": "&#10004;", "warn": "&#9888;", "fail": "&#10008;"}.get(status, "?")
+    return {"pass": "#1f9d55", "warn": "#b7791f", "fail": "#c53030"}.get(status, "#4a5568")
 
 
 def _status_label(status: str) -> str:
-    return {"pass": "עובר", "warn": "אזהרה", "fail": "נכשל"}.get(status, status)
+    return {"pass": "תקין", "warn": "דורש תשומת לב", "fail": "דורש תיקון"}.get(status, status)
 
 
-def _format_metric(key: str, value) -> str:
+def _format_metric(key: str, value: object) -> str:
     if isinstance(value, float):
-        if value <= 1.0 and key not in ("faithfulness_avg", "relevance_avg", "completeness_avg"):
+        if key in {"hit_rate", "mrr", "precision", "clean_file_rate", "pass_rate"}:
             return f"{value:.1%}"
         return f"{value:.2f}"
     return str(value)
 
 
-def generate_dashboard(report: EvalReport, eval_set: EvalSet, output_path: str) -> None:
-    """Generate an HTML dashboard from the evaluation report."""
+def _nl_to_br(text: str) -> str:
+    return escape(text).replace("\n", "<br>")
 
-    # Build category cards
-    category_cards = ""
-    for cat in report.categories:
-        info = _CATEGORY_LABELS.get(cat.category, {})
-        title = info.get("title", cat.category)
-        desc = info.get("description", "")
-        metrics_help = info.get("metrics_help", {})
-        color = _status_color(cat.status)
-        icon = _status_icon(cat.status)
-        label = _status_label(cat.status)
 
-        # Metrics table rows
-        metrics_rows = ""
-        for key, value in cat.metrics.items():
-            if key in ("evaluated_count", "completeness_count", "issues_by_type", "subcategories"):
+def _build_detail_maps(report: EvalReport) -> tuple[dict[int, dict], dict[int, dict], dict[int, dict]]:
+    retrieval_details: dict[int, dict] = {}
+    answer_details: dict[int, dict] = {}
+    edge_details: dict[int, dict] = {}
+
+    for category in report.categories:
+        if category.category == "retrieval":
+            for detail in category.details:
+                retrieval_details[detail.get("question_id")] = detail
+        elif category.category == "answer":
+            for detail in category.details:
+                answer_details[detail.get("question_id")] = detail
+        elif category.category == "edge_cases":
+            for detail in category.details:
+                edge_details[detail.get("question_id")] = detail
+
+    return retrieval_details, answer_details, edge_details
+
+
+def _question_metric_impact(item) -> str:
+    impacts = []
+    if item.expected_source_files or item.expected_section_types:
+        impacts.append("שליפה")
+    if item.answer:
+        impacts.append("תשובה")
+    if item.golden_answer:
+        impacts.append("שלמות")
+    if item.category in {"no_answer", "cross_protocol", "specificity", "ambiguous"}:
+        impacts.append("מקרי קצה")
+    return ", ".join(impacts) if impacts else "תיעוד בלבד"
+
+
+def _question_action(item, retrieval_info: dict, answer_info: dict, edge_info: dict) -> str:
+    if not item.golden_answer and item.category in {"specific", "specificity"}:
+        return "להוסיף תשובת ייחוס כדי למדוד שלמות במדויק."
+    if (item.expected_source_files or item.expected_section_types) and not retrieval_info:
+        return "להשלים ציפיית שליפה או לוודא שהשאלה נמדדת נכון."
+    if answer_info:
+        completeness = answer_info.get("completeness")
+        if completeness and completeness.get("missing_facts"):
+            return "לחדד את תשובת הייחוס או לוודא שהמערכת מחזירה גם את העובדות החסרות."
+    if edge_info and edge_info.get("passed") is False:
+        return "לבדוק אם ההתנהגות המצופה הוגדרה נכון ואם התשובה באמת תומכת במטרה העסקית."
+    return "נראה תקין כרגע; אפשר להשתמש בפריט הזה כעוגן להשוואה עתידית."
+
+
+def _render_scoreboard(report: EvalReport) -> str:
+    cards = []
+    for category in report.categories:
+        info = _CATEGORY_INFO.get(category.category, {})
+        color = _status_color(category.status)
+        rows = []
+        for key, value in category.metrics.items():
+            if key in {"issues_by_type", "subcategories"}:
                 continue
-            help_text = metrics_help.get(key, key)
-            formatted = _format_metric(key, value)
-            metrics_rows += f"""
-                <tr>
-                    <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; color: #374151; font-weight: 500;">{help_text}</td>
-                    <td style="padding: 8px 12px; border-bottom: 1px solid #e5e7eb; text-align: left; font-weight: 700; font-size: 1.1em;">{formatted}</td>
-                </tr>"""
+            rows.append(
+                f"""
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">{escape(info.get("metric_labels", {}).get(key, key))}</div>
+                        <div class="metric-help">{escape(info.get("metric_help", {}).get(key, ""))}</div>
+                    </div>
+                    <div class="metric-value">{escape(_format_metric(key, value))}</div>
+                </div>"""
+            )
 
-        # Subcategories for edge cases
-        subcats_html = ""
-        if cat.category == "edge_cases" and "subcategories" in cat.metrics:
-            subcats_html = '<div style="margin-top: 16px;">'
-            for sub_key, sub_data in cat.metrics["subcategories"].items():
-                sub_label = _SUBCATEGORY_LABELS.get(sub_key, sub_key)
-                sub_passed = sub_data.get("passed", 0)
-                sub_total = sub_data.get("total", 0)
-                sub_rate = sub_data.get("pass_rate", 0)
-                sub_color = "#22c55e" if sub_rate >= 0.8 else "#f59e0b" if sub_rate >= 0.6 else "#ef4444"
-                subcats_html += f"""
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
-                        <span style="color: #4b5563; font-size: 0.9em;">{sub_label}</span>
-                        <span style="color: {sub_color}; font-weight: 700;">{sub_passed}/{sub_total}</span>
+        extra = ""
+        if category.category == "chunking":
+            issues = category.metrics.get("issues_by_type", {})
+            if issues:
+                chips = "".join(
+                    f'<span class="chip chip-danger">{escape(issue_type)}: {escape(str(count))}</span>'
+                    for issue_type, count in issues.items()
+                )
+                extra = f'<div class="sub-block"><div class="sub-title">פירוט בעיות מבנה</div><div>{chips}</div></div>'
+
+        if category.category == "edge_cases":
+            subcategories = category.metrics.get("subcategories", {})
+            if subcategories:
+                sub_rows = "".join(
+                    f"""
+                    <div class="mini-row">
+                        <span>{escape(_EDGE_SUBCATEGORY_LABELS.get(name, name))}</span>
+                        <strong>{escape(str(data.get("passed", 0)))}/{escape(str(data.get("total", 0)))}</strong>
                     </div>"""
-            subcats_html += "</div>"
+                    for name, data in subcategories.items()
+                )
+                extra = f'<div class="sub-block"><div class="sub-title">פירוט מקרי קצה</div>{sub_rows}</div>'
 
-        # Issues breakdown for chunking
-        issues_html = ""
-        if cat.category == "chunking" and "issues_by_type" in cat.metrics:
-            issues_by_type = cat.metrics["issues_by_type"]
-            if issues_by_type:
-                issue_labels = {
-                    "missing_metadata": "metadata חסר",
-                    "bad_section_dist": "מבנה סקציות שגוי",
-                    "encoding_error": "שגיאות קידוד",
-                    "bad_chunk_count": "מספר chunks חריג",
-                    "empty_content": "תוכן ריק",
-                }
-                issues_html = '<div style="margin-top: 16px;"><h4 style="margin: 0 0 8px 0; color: #6b7280; font-size: 0.85em;">פירוט בעיות:</h4>'
-                for issue_type, count in issues_by_type.items():
-                    issue_label = issue_labels.get(issue_type, issue_type)
-                    issues_html += f'<span style="display: inline-block; background: #fef2f2; color: #991b1b; padding: 4px 10px; border-radius: 12px; margin: 2px 4px; font-size: 0.85em;">{issue_label}: {count}</span>'
-                issues_html += "</div>"
+        field_rows = "".join(
+            f"<li><strong>{escape(field)}</strong>: {escape(help_text)}</li>"
+            for field, help_text in info.get("client_fields", [])
+        )
 
-        category_cards += f"""
-        <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-right: 5px solid {color};">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h2 style="margin: 0; font-size: 1.3em; color: #1f2937;">{title}</h2>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 2em; font-weight: 800; color: {color};">{cat.score:.0f}</span>
-                    <span style="background: {color}; color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.85em; font-weight: 600;">{icon} {label}</span>
+        cards.append(
+            f"""
+            <section class="panel category-panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>{escape(info.get("title", category.category))}</h3>
+                        <p class="muted">{escape(info.get("subtitle", ""))}</p>
+                    </div>
+                    <div class="score-badge" style="border-color: {color}; color: {color};">
+                        <div class="score-number">{category.score:.0f}</div>
+                        <div class="score-status">{escape(_status_label(category.status))}</div>
+                    </div>
                 </div>
-            </div>
-            <p style="color: #6b7280; margin: 0 0 16px 0; font-size: 0.95em; line-height: 1.6;">{desc}</p>
-            <table style="width: 100%; border-collapse: collapse;">
-                {metrics_rows}
-            </table>
-            {subcats_html}
-            {issues_html}
-        </div>"""
+                <div class="explain-grid">
+                    <div>
+                        <div class="sub-title">מה נבדק כאן</div>
+                        <p>{escape(info.get("why", ""))}</p>
+                    </div>
+                    <div>
+                        <div class="sub-title">איך לקרוא את הציון</div>
+                        <p>{escape(info.get("score_meaning", ""))}</p>
+                    </div>
+                </div>
+                <div class="metrics-list">{''.join(rows)}</div>
+                {extra}
+                <div class="sub-block">
+                    <div class="sub-title">איזה שדות בטבלת השאלות משפיעים על המדד הזה</div>
+                    <ul class="field-list">{field_rows}</ul>
+                </div>
+            </section>"""
+        )
 
-    # Build per-question table from eval set items + report details
-    questions_rows = ""
-    # Map question scores from answer report
-    answer_details = {}
-    for cat in report.categories:
-        if cat.category == "answer":
-            for d in cat.details:
-                answer_details[d.get("question_id")] = d
+    return "".join(cards)
 
-    edge_details = {}
-    for cat in report.categories:
-        if cat.category == "edge_cases":
-            for d in cat.details:
-                edge_details[d.get("question_id")] = d
+
+def _render_questions_table(eval_set: EvalSet, report: EvalReport) -> str:
+    retrieval_details, answer_details, edge_details = _build_detail_maps(report)
+    rows = []
 
     for item in eval_set.items:
-        cat_badge_color = {
-            "broad": "#3b82f6", "specific": "#8b5cf6", "no_answer": "#ef4444",
-            "cross_protocol": "#f59e0b", "specificity": "#06b6d4", "ambiguous": "#6b7280",
-        }.get(item.category, "#9ca3af")
-
-        cat_label = {
-            "broad": "כללי", "specific": "ספציפי", "no_answer": "אין תשובה",
-            "cross_protocol": "חוצה-פרוטוקולים", "specificity": "ערך מדויק", "ambiguous": "עמום",
-        }.get(item.category, item.category)
-
-        # Get scores
+        retrieval_info = retrieval_details.get(item.id, {})
         answer_info = answer_details.get(item.id, {})
-        faith = answer_info.get("faithfulness", {}).get("score", "—")
-        relev = answer_info.get("relevance", {}).get("score", "—")
-        compl_data = answer_info.get("completeness")
-        compl = compl_data.get("score", "—") if compl_data else "—"
-
         edge_info = edge_details.get(item.id, {})
-        edge_pass = edge_info.get("passed")
-        edge_icon = ""
-        if edge_pass is True:
-            edge_icon = '<span style="color: #22c55e;">&#10004;</span>'
-        elif edge_pass is False:
-            edge_icon = '<span style="color: #ef4444;">&#10008;</span>'
 
-        answer_preview = (item.answer[:150] + "...") if len(item.answer) > 150 else item.answer
+        retrieval_summary = "לא נמדד"
+        if retrieval_info:
+            retrieval_summary = (
+                f"Hit: {'כן' if retrieval_info.get('hit') else 'לא'} | "
+                f"MRR: {_format_metric('mrr', retrieval_info.get('reciprocal_rank', 0.0))} | "
+                f"Precision: {_format_metric('precision', retrieval_info.get('precision', 0.0))}"
+            )
 
-        questions_rows += f"""
-            <tr style="border-bottom: 1px solid #e5e7eb;">
-                <td style="padding: 10px; font-weight: 600; color: #374151;">{item.id}</td>
-                <td style="padding: 10px;"><span style="background: {cat_badge_color}; color: white; padding: 2px 8px; border-radius: 6px; font-size: 0.8em;">{cat_label}</span></td>
-                <td style="padding: 10px; color: #1f2937; direction: rtl; text-align: right;">{item.question}</td>
-                <td style="padding: 10px; color: #4b5563; direction: rtl; text-align: right; font-size: 0.9em; max-width: 350px; overflow: hidden; text-overflow: ellipsis;">{answer_preview}</td>
-                <td style="padding: 10px; text-align: center; font-weight: 600;">{faith}</td>
-                <td style="padding: 10px; text-align: center; font-weight: 600;">{relev}</td>
-                <td style="padding: 10px; text-align: center; font-weight: 600;">{compl}</td>
-                <td style="padding: 10px; text-align: center;">{item.num_sources}</td>
-                <td style="padding: 10px; text-align: center;">{edge_icon}</td>
+        answer_summary = "לא נמדד"
+        if answer_info:
+            faith = answer_info.get("faithfulness", {}).get("score", "—")
+            relevance = answer_info.get("relevance", {}).get("score", "—")
+            completeness_data = answer_info.get("completeness")
+            completeness = completeness_data.get("score", "—") if completeness_data else "—"
+            answer_summary = f"נאמנות {faith}/5 | רלוונטיות {relevance}/5 | שלמות {completeness}/5"
+
+        edge_summary = "לא נמדד"
+        if edge_info:
+            edge_summary = f"{'עבר' if edge_info.get('passed') else 'נכשל'} | {edge_info.get('detail', '')}"
+
+        expected_sources = ", ".join(item.expected_source_files) if item.expected_source_files else "—"
+        expected_sections = ", ".join(item.expected_section_types) if item.expected_section_types else "—"
+        golden_answer = item.golden_answer or "חסר כרגע"
+        previews = "<br>".join(escape(preview[:120]) for preview in item.source_previews[:2]) or "—"
+
+        rows.append(
+            f"""
+            <tr>
+                <td>{item.id}</td>
+                <td>
+                    <div><strong>{escape(_QUESTION_CATEGORY_LABELS.get(item.category, item.category))}</strong></div>
+                    <div class="cell-help">{escape(_QUESTION_CATEGORY_HELP.get(item.category, ""))}</div>
+                </td>
+                <td class="rtl">{_nl_to_br(item.question)}</td>
+                <td>{escape(_question_metric_impact(item))}</td>
+                <td class="rtl">{_nl_to_br(item.answer[:220] + ('...' if len(item.answer) > 220 else ''))}</td>
+                <td class="rtl">{_nl_to_br(golden_answer[:220] + ('...' if len(golden_answer) > 220 else ''))}</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> {escape(expected_sources)}</div>
+                    <div class="cell-help"><strong>חלקים:</strong> {escape(expected_sections)}</div>
+                </td>
+                <td class="rtl">{_nl_to_br(retrieval_summary)}</td>
+                <td class="rtl">{_nl_to_br(answer_summary)}</td>
+                <td class="rtl">{_nl_to_br(edge_summary)}</td>
+                <td class="rtl">{previews}</td>
+                <td class="rtl">{escape(_question_action(item, retrieval_info, answer_info, edge_info))}</td>
             </tr>"""
+        )
+
+    return "".join(rows)
+
+
+def generate_dashboard(report: EvalReport, eval_set: EvalSet, output_path: str) -> None:
+    """Generate a client-facing HTML work document from the evaluation report."""
 
     overall_color = _status_color(report.overall_status)
-    overall_icon = _status_icon(report.overall_status)
-    overall_label = _status_label(report.overall_status)
+    intro_panels = """
+        <section class="panel intro-panel">
+            <h2>מה המסמך הזה נותן</h2>
+            <div class="intro-grid">
+                <div>
+                    <h3>1. מה נבדק ולמה זה חשוב</h3>
+                    <p>כל אזור במסמך מסביר בשפה פשוטה איזה חלק של מערכת ה-RAG נבדק ואיך זה קשור להצלחת הפרויקט בפועל.</p>
+                </div>
+                <div>
+                    <h3>2. מצב נוכחי במספרים</h3>
+                    <p>הציונים מראים איפה המערכת חזקה כרגע ואיפה צריך שיפור, כדי שאפשר יהיה למדוד התקדמות בין ריצות.</p>
+                </div>
+                <div>
+                    <h3>3. מסמך עבודה ללקוח</h3>
+                    <p>טבלת השאלות נועדה לא רק להצגה, אלא גם לשיפור השאלות, תשובות הייחוס, וציפיות השליפה שמגדירות את הבנצ'מרק.</p>
+                </div>
+            </div>
+        </section>
+        <section class="panel intro-panel">
+            <h2>איך לקרוא את טבלת השאלות</h2>
+            <div class="intro-grid">
+                <div>
+                    <h3>שאלה ותשובת בסיס</h3>
+                    <p>זו התנהגות המערכת היום. זו נקודת ההשוואה לכל שינוי עתידי.</p>
+                </div>
+                <div>
+                    <h3>תשובת ייחוס</h3>
+                    <p>כאשר יש תשובת ייחוס, אפשר למדוד שלמות ולא רק התרשמות כללית. זה המקום הכי חשוב לשיתוף פעולה עם הלקוח.</p>
+                </div>
+                <div>
+                    <h3>ציפיית שליפה</h3>
+                    <p>קובעת מאילו מסמכים או מאיזה סוג קטע אנחנו מצפים שהתשובה תבוא. בלי זה קשה לדעת אם השליפה באמת הצליחה.</p>
+                </div>
+                <div>
+                    <h3>תוצאות לפי שאלה</h3>
+                    <p>כל שורה מראה איך אותה שאלה השפיעה על שליפה, על איכות התשובה, ועל מקרי קצה אם רלוונטי.</p>
+                </div>
+            </div>
+        </section>
+    """
 
     html = f"""<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protokal.AI — Evaluation Dashboard</title>
+    <title>Protokal.AI Evaluation Work Document</title>
     <style>
-        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; color: #1f2937; direction: rtl; padding: 24px; }}
-        .container {{ max-width: 1200px; margin: 0 auto; }}
-        h1 {{ font-size: 1.8em; margin-bottom: 8px; }}
-        .subtitle {{ color: #6b7280; margin-bottom: 24px; }}
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; margin-bottom: 32px; }}
-        table {{ width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }}
-        th {{ background: #f3f4f6; padding: 12px 10px; text-align: right; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; font-size: 0.85em; }}
-        .legend {{ background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }}
-        .legend h3 {{ margin-bottom: 12px; color: #374151; }}
-        .legend-item {{ display: inline-block; margin: 4px 8px; padding: 4px 12px; border-radius: 8px; font-size: 0.9em; }}
+        * {{ box-sizing: border-box; }}
+        body {{ margin: 0; background: #f4f6f8; color: #1f2933; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }}
+        .container {{ max-width: 1480px; margin: 0 auto; padding: 24px; }}
+        .hero {{ background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 28px; margin-bottom: 24px; }}
+        .hero-grid {{ display: grid; grid-template-columns: 1.6fr 0.8fr; gap: 20px; align-items: start; }}
+        .hero h1 {{ margin: 0 0 8px; font-size: 32px; }}
+        .muted {{ color: #52606d; }}
+        .overall-box {{ border: 2px solid {overall_color}; border-radius: 8px; padding: 18px; text-align: center; color: {overall_color}; }}
+        .overall-score {{ font-size: 56px; font-weight: 700; line-height: 1; }}
+        .panel {{ background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 24px; margin-bottom: 24px; }}
+        .intro-grid {{ display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 18px; }}
+        .cards-grid {{ display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 20px; }}
+        .panel-head {{ display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 18px; }}
+        .score-badge {{ min-width: 110px; border: 2px solid; border-radius: 8px; padding: 10px 12px; text-align: center; }}
+        .score-number {{ font-size: 34px; font-weight: 700; line-height: 1; }}
+        .score-status {{ margin-top: 6px; font-size: 14px; }}
+        .explain-grid {{ display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 18px; margin-bottom: 18px; }}
+        .sub-title {{ font-weight: 700; margin-bottom: 6px; }}
+        .metrics-list {{ border-top: 1px solid #e4e7eb; }}
+        .metric-row {{ display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e4e7eb; }}
+        .metric-name {{ font-weight: 700; }}
+        .metric-help {{ color: #52606d; font-size: 14px; }}
+        .metric-value {{ font-weight: 700; white-space: nowrap; }}
+        .sub-block {{ margin-top: 18px; padding-top: 16px; border-top: 1px solid #e4e7eb; }}
+        .field-list {{ margin: 0; padding-right: 18px; }}
+        .field-list li {{ margin-bottom: 8px; }}
+        .chip {{ display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 13px; margin: 4px 6px 0 0; }}
+        .chip-danger {{ background: #fde8e8; color: #9b1c1c; }}
+        .mini-row {{ display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f4f8; }}
+        table {{ width: 100%; border-collapse: collapse; background: white; border: 1px solid #d9e2ec; border-radius: 8px; overflow: hidden; }}
+        th, td {{ padding: 12px; border-bottom: 1px solid #e4e7eb; vertical-align: top; text-align: right; font-size: 14px; }}
+        th {{ background: #f0f4f8; font-size: 13px; }}
+        .rtl {{ direction: rtl; }}
+        .cell-help {{ color: #52606d; font-size: 12px; margin-top: 4px; }}
+        .footer {{ color: #7b8794; font-size: 12px; text-align: center; padding: 8px 0 24px; }}
+        @media (max-width: 980px) {{
+            .hero-grid, .cards-grid, .intro-grid, .explain-grid {{ grid-template-columns: 1fr; }}
+            .container {{ padding: 16px; }}
+            .hero h1 {{ font-size: 28px; }}
+            .overall-score {{ font-size: 46px; }}
+        }}
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
-            <div>
-                <h1>Protokal.AI — דשבורד הערכה</h1>
-                <p class="subtitle">נוצר: {report.created_at[:19].replace('T', ' ')} UTC | {eval_set.total_items} שאלות</p>
+        <section class="hero">
+            <div class="hero-grid">
+                <div>
+                    <h1>מסמך עבודה להערכת RAG</h1>
+                    <p class="muted">המסמך הזה מחבר בין בדיקות המערכת, ציוני המדדים, וטבלת העבודה של השאלות והתשובות במקום אחד.</p>
+                    <p class="muted">נוצר: {escape(report.created_at[:19].replace('T', ' '))} UTC | מספר שאלות במסמך: {eval_set.total_items}</p>
+                </div>
+                <div class="overall-box">
+                    <div class="overall-score">{report.overall_score:.0f}</div>
+                    <div>{escape(_status_label(report.overall_status))}</div>
+                </div>
             </div>
-            <div style="text-align: center;">
-                <div style="font-size: 3em; font-weight: 900; color: {overall_color};">{report.overall_score:.0f}</div>
-                <div style="background: {overall_color}; color: white; padding: 6px 16px; border-radius: 8px; font-weight: 700; font-size: 1.1em;">{overall_icon} {overall_label}</div>
+        </section>
+
+        {intro_panels}
+
+        <section class="cards-grid">
+            {_render_scoreboard(report)}
+        </section>
+
+        <section class="panel">
+            <h2>טבלת העבודה המלאה של השאלות</h2>
+            <p class="muted">זו הטבלה שהלקוח והצוות יכולים לעבוד עליה יחד. כל שורה מראה מה נמדד, למה זה משפיע, ומה כדאי להשלים או לחדד.</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>סוג שאלה</th>
+                            <th>שאלה</th>
+                            <th>על אילו מדדים היא משפיעה</th>
+                            <th>תשובת בסיס</th>
+                            <th>תשובת ייחוס</th>
+                            <th>ציפיית שליפה</th>
+                            <th>תוצאת שליפה</th>
+                            <th>תוצאת תשובה</th>
+                            <th>תוצאת מקרה קצה</th>
+                            <th>תצוגת מקורות</th>
+                            <th>פעולה מומלצת</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {_render_questions_table(eval_set, report)}
+                    </tbody>
+                </table>
             </div>
-        </div>
+        </section>
 
-        <!-- Legend -->
-        <div class="legend">
-            <h3>מקרא סטטוסים</h3>
-            <span class="legend-item" style="background: #dcfce7; color: #166534;">&#10004; עובר — העמידה ביעדים</span>
-            <span class="legend-item" style="background: #fef9c3; color: #854d0e;">&#9888; אזהרה — קרוב לסף, דורש תשומת לב</span>
-            <span class="legend-item" style="background: #fef2f2; color: #991b1b;">&#10008; נכשל — מתחת ליעד, דורש תיקון</span>
-        </div>
-
-        <!-- Category Cards -->
-        <div class="grid">
-            {category_cards}
-        </div>
-
-        <!-- Per-Question Table -->
-        <h2 style="margin-bottom: 16px; font-size: 1.4em;">פירוט לפי שאלה</h2>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 40px;">#</th>
-                        <th style="width: 100px;">קטגוריה</th>
-                        <th style="min-width: 200px;">שאלה</th>
-                        <th style="min-width: 250px;">תשובה (תקציר)</th>
-                        <th style="width: 70px; text-align: center;" title="נאמנות — האם התשובה נאמנה ל-context">נאמנות</th>
-                        <th style="width: 70px; text-align: center;" title="רלוונטיות — האם התשובה עונה על השאלה">רלוונט</th>
-                        <th style="width: 70px; text-align: center;" title="שלמות — האם התשובה מכסה את כל המידע">שלמות</th>
-                        <th style="width: 60px; text-align: center;">מקורות</th>
-                        <th style="width: 60px; text-align: center;" title="תוצאת מקרה קצה">קצה</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {questions_rows}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 32px; padding: 16px; color: #9ca3af; font-size: 0.85em;">
-            Protokal.AI Evaluation Framework | Generated automatically by run_eval.py
-        </div>
+        <div class="footer">Generated by Protokal.AI evaluation pipeline</div>
     </div>
 </body>
 </html>"""
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(html)
+    with open(output_path, "w", encoding="utf-8") as file:
+        file.write(html)

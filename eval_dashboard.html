@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protokal.AI Evaluation Work Document</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f4f6f8; color: #1f2933; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }
+        .container { max-width: 1480px; margin: 0 auto; padding: 24px; }
+        .hero { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 28px; margin-bottom: 24px; }
+        .hero-grid { display: grid; grid-template-columns: 1.6fr 0.8fr; gap: 20px; align-items: start; }
+        .hero h1 { margin: 0 0 8px; font-size: 32px; }
+        .muted { color: #52606d; }
+        .overall-box { border: 2px solid #c53030; border-radius: 8px; padding: 18px; text-align: center; color: #c53030; }
+        .overall-score { font-size: 56px; font-weight: 700; line-height: 1; }
+        .panel { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+        .intro-grid { display: grid; grid-template-columns: repeat(2, minmax(280px, 1fr)); gap: 18px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 20px; }
+        .panel-head { display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 18px; }
+        .score-badge { min-width: 110px; border: 2px solid; border-radius: 8px; padding: 10px 12px; text-align: center; }
+        .score-number { font-size: 34px; font-weight: 700; line-height: 1; }
+        .score-status { margin-top: 6px; font-size: 14px; }
+        .explain-grid { display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 18px; margin-bottom: 18px; }
+        .sub-title { font-weight: 700; margin-bottom: 6px; }
+        .metrics-list { border-top: 1px solid #e4e7eb; }
+        .metric-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e4e7eb; }
+        .metric-name { font-weight: 700; }
+        .metric-help { color: #52606d; font-size: 14px; }
+        .metric-value { font-weight: 700; white-space: nowrap; }
+        .sub-block { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e4e7eb; }
+        .field-list { margin: 0; padding-right: 18px; }
+        .field-list li { margin-bottom: 8px; }
+        .chip { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 13px; margin: 4px 6px 0 0; }
+        .chip-danger { background: #fde8e8; color: #9b1c1c; }
+        .mini-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f4f8; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #d9e2ec; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; border-bottom: 1px solid #e4e7eb; vertical-align: top; text-align: right; font-size: 14px; }
+        th { background: #f0f4f8; font-size: 13px; }
+        .rtl { direction: rtl; }
+        .cell-help { color: #52606d; font-size: 12px; margin-top: 4px; }
+        .footer { color: #7b8794; font-size: 12px; text-align: center; padding: 8px 0 24px; }
+        @media (max-width: 980px) {
+            .hero-grid, .cards-grid, .intro-grid, .explain-grid { grid-template-columns: 1fr; }
+            .container { padding: 16px; }
+            .hero h1 { font-size: 28px; }
+            .overall-score { font-size: 46px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <div class="hero-grid">
+                <div>
+                    <h1>מסמך עבודה להערכת RAG</h1>
+                    <p class="muted">המסמך הזה מחבר בין בדיקות המערכת, ציוני המדדים, וטבלת העבודה של השאלות והתשובות במקום אחד.</p>
+                    <p class="muted">נוצר: 2026-04-23 12:24:20 UTC | מספר שאלות במסמך: 12</p>
+                </div>
+                <div class="overall-box">
+                    <div class="overall-score">77</div>
+                    <div>דורש תיקון</div>
+                </div>
+            </div>
+        </section>
+
+        
+        <section class="panel intro-panel">
+            <h2>מה המסמך הזה נותן</h2>
+            <div class="intro-grid">
+                <div>
+                    <h3>1. מה נבדק ולמה זה חשוב</h3>
+                    <p>כל אזור במסמך מסביר בשפה פשוטה איזה חלק של מערכת ה-RAG נבדק ואיך זה קשור להצלחת הפרויקט בפועל.</p>
+                </div>
+                <div>
+                    <h3>2. מצב נוכחי במספרים</h3>
+                    <p>הציונים מראים איפה המערכת חזקה כרגע ואיפה צריך שיפור, כדי שאפשר יהיה למדוד התקדמות בין ריצות.</p>
+                </div>
+                <div>
+                    <h3>3. מסמך עבודה ללקוח</h3>
+                    <p>טבלת השאלות נועדה לא רק להצגה, אלא גם לשיפור השאלות, תשובות הייחוס, וציפיות השליפה שמגדירות את הבנצ'מרק.</p>
+                </div>
+            </div>
+        </section>
+        <section class="panel intro-panel">
+            <h2>איך לקרוא את טבלת השאלות</h2>
+            <div class="intro-grid">
+                <div>
+                    <h3>שאלה ותשובת בסיס</h3>
+                    <p>זו התנהגות המערכת היום. זו נקודת ההשוואה לכל שינוי עתידי.</p>
+                </div>
+                <div>
+                    <h3>תשובת ייחוס</h3>
+                    <p>כאשר יש תשובת ייחוס, אפשר למדוד שלמות ולא רק התרשמות כללית. זה המקום הכי חשוב לשיתוף פעולה עם הלקוח.</p>
+                </div>
+                <div>
+                    <h3>ציפיית שליפה</h3>
+                    <p>קובעת מאילו מסמכים או מאיזה סוג קטע אנחנו מצפים שהתשובה תבוא. בלי זה קשה לדעת אם השליפה באמת הצליחה.</p>
+                </div>
+                <div>
+                    <h3>תוצאות לפי שאלה</h3>
+                    <p>כל שורה מראה איך אותה שאלה השפיעה על שליפה, על איכות התשובה, ועל מקרי קצה אם רלוונטי.</p>
+                </div>
+            </div>
+        </section>
+    
+
+        <section class="cards-grid">
+            
+            <section class="panel category-panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>1. בדיקות שליפה</h3>
+                        <p class="muted">האם המערכת מביאה את הקטעים הנכונים מהפרוטוקולים לפני שהיא עונה</p>
+                    </div>
+                    <div class="score-badge" style="border-color: #1f9d55; color: #1f9d55;">
+                        <div class="score-number">76</div>
+                        <div class="score-status">תקין</div>
+                    </div>
+                </div>
+                <div class="explain-grid">
+                    <div>
+                        <div class="sub-title">מה נבדק כאן</div>
+                        <p>אם השליפה לא טובה, גם תשובה שנשמעת טוב יכולה להיות מבוססת על מסמכים לא נכונים.</p>
+                    </div>
+                    <div>
+                        <div class="sub-title">איך לקרוא את הציון</div>
+                        <p>הציון משקף עד כמה השאלה מגיעה למסמך הנכון, כמה מהר הוא מופיע, וכמה מהתוצאות באמת רלוונטיות.</p>
+                    </div>
+                </div>
+                <div class="metrics-list">
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">Hit Rate</div>
+                        <div class="metric-help">באיזה אחוז מהשאלות לפחות אחד מהקטעים שנשלפו היה נכון.</div>
+                    </div>
+                    <div class="metric-value">87.5%</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">MRR</div>
+                        <div class="metric-help">כמה גבוה הופיע הקטע הנכון בתוצאות. גבוה יותר אומר שהשליפה מגיעה מהר לדברים הנכונים.</div>
+                    </div>
+                    <div class="metric-value">72.9%</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">Precision</div>
+                        <div class="metric-help">מתוך כל הקטעים שנשלפו, כמה מהם באמת היו רלוונטיים.</div>
+                    </div>
+                    <div class="metric-value">53.1%</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">שאלות שנמדדו</div>
+                        <div class="metric-help">לא כל שאלה מודדת שליפה. כאן רואים בכמה שאלות באמת היה יעד שליפה מוגדר.</div>
+                    </div>
+                    <div class="metric-value">8</div>
+                </div></div>
+                
+                <div class="sub-block">
+                    <div class="sub-title">איזה שדות בטבלת השאלות משפיעים על המדד הזה</div>
+                    <ul class="field-list"><li><strong>expected_source_files</strong>: מגדיר מאילו פרוטוקולים אנחנו מצפים שהמערכת תשלוף מידע.</li><li><strong>expected_section_types</strong>: מגדיר איזה סוג חלק במסמך אמור להכיל את התשובה.</li></ul>
+                </div>
+            </section>
+            <section class="panel category-panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>2. בדיקות תשובה</h3>
+                        <p class="muted">האם התשובה עצמה נכונה, ממוקדת, ומכסה את מה שחשוב</p>
+                    </div>
+                    <div class="score-badge" style="border-color: #1f9d55; color: #1f9d55;">
+                        <div class="score-number">92</div>
+                        <div class="score-status">תקין</div>
+                    </div>
+                </div>
+                <div class="explain-grid">
+                    <div>
+                        <div class="sub-title">מה נבדק כאן</div>
+                        <p>המטרה העסקית היא לא רק למצוא מסמך, אלא לתת תשובה שאפשר לסמוך עליה.</p>
+                    </div>
+                    <div>
+                        <div class="sub-title">איך לקרוא את הציון</div>
+                        <p>הציון משלב נאמנות למקור, רלוונטיות לשאלה, ושלמות מול תשובת ייחוס כאשר קיימת.</p>
+                    </div>
+                </div>
+                <div class="metrics-list">
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">נאמנות</div>
+                        <div class="metric-help">האם התשובה נאמנה לטקסט שנשלף, בלי להמציא פרטים.</div>
+                    </div>
+                    <div class="metric-value">5.00</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">רלוונטיות</div>
+                        <div class="metric-help">האם התשובה באמת עונה על השאלה שנשאלה.</div>
+                    </div>
+                    <div class="metric-value">4.75</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">שלמות</div>
+                        <div class="metric-help">כאשר יש תשובת ייחוס, האם התשובה מכסה את כל העובדות החשובות.</div>
+                    </div>
+                    <div class="metric-value">4.00</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">שאלות עם תשובת ייחוס</div>
+                        <div class="metric-help">מספר השאלות שיש להן כרגע תשובת ייחוס ולכן אפשר למדוד בהן שלמות.</div>
+                    </div>
+                    <div class="metric-value">4</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">שאלות שנמדדו</div>
+                        <div class="metric-help">כמה שאלות השתתפו במדידת איכות התשובה.</div>
+                    </div>
+                    <div class="metric-value">8</div>
+                </div></div>
+                
+                <div class="sub-block">
+                    <div class="sub-title">איזה שדות בטבלת השאלות משפיעים על המדד הזה</div>
+                    <ul class="field-list"><li><strong>golden_answer</strong>: זו תשובת הייחוס של הלקוח. היא מה שמאפשר למדוד שלמות ולא רק תחושה כללית.</li><li><strong>answer</strong>: זו תשובת הבסיס שהמערכת מחזירה כרגע, כדי להשוות שינויים לאורך זמן.</li></ul>
+                </div>
+            </section>
+            <section class="panel category-panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>3. בדיקות מבנה הנתונים</h3>
+                        <p class="muted">האם הפרוטוקולים מפורקים לקטעים בצורה נקייה ושימושית לשליפה</p>
+                    </div>
+                    <div class="score-badge" style="border-color: #1f9d55; color: #1f9d55;">
+                        <div class="score-number">93</div>
+                        <div class="score-status">תקין</div>
+                    </div>
+                </div>
+                <div class="explain-grid">
+                    <div>
+                        <div class="sub-title">מה נבדק כאן</div>
+                        <p>גם מודל טוב יתקשה אם המסמכים נשמרו עם metadata חסר, קידוד שבור, או חלוקה לא טובה.</p>
+                    </div>
+                    <div>
+                        <div class="sub-title">איך לקרוא את הציון</div>
+                        <p>הציון משקף את שיעור הקבצים הנקיים מבעיות מבנה, metadata ותוכן.</p>
+                    </div>
+                </div>
+                <div class="metrics-list">
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">סה&quot;כ קטעים</div>
+                        <div class="metric-help">כמה קטעים קיימים היום בוקטור סטור.</div>
+                    </div>
+                    <div class="metric-value">667</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">סה&quot;כ קבצי מקור</div>
+                        <div class="metric-help">כמה קבצים שונים נסרקו והפכו לקטעים.</div>
+                    </div>
+                    <div class="metric-value">116</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">סה&quot;כ בעיות</div>
+                        <div class="metric-help">כמה בעיות מבנה נמצאו בכלל הקבצים.</div>
+                    </div>
+                    <div class="metric-value">13</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">שיעור קבצים נקיים</div>
+                        <div class="metric-help">באיזה אחוז מהקבצים לא נמצאה אף בעיית מבנה.</div>
+                    </div>
+                    <div class="metric-value">93.1%</div>
+                </div></div>
+                <div class="sub-block"><div class="sub-title">פירוט בעיות מבנה</div><div><span class="chip chip-danger">empty_content: 7</span><span class="chip chip-danger">missing_metadata: 1</span><span class="chip chip-danger">bad_section_dist: 4</span><span class="chip chip-danger">bad_chunk_count: 1</span></div></div>
+                <div class="sub-block">
+                    <div class="sub-title">איזה שדות בטבלת השאלות משפיעים על המדד הזה</div>
+                    <ul class="field-list"><li><strong>source_previews</strong>: נותן תחושת בקרה על הקטעים שהמערכת באמת רואה.</li></ul>
+                </div>
+            </section>
+            <section class="panel category-panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>4. בדיקות התנהגות מיוחדת</h3>
+                        <p class="muted">איך המערכת מתנהגת כששואלים שאלות קשות, עמומות, או בלי תשובה אמיתית</p>
+                    </div>
+                    <div class="score-badge" style="border-color: #c53030; color: #c53030;">
+                        <div class="score-number">38</div>
+                        <div class="score-status">דורש תיקון</div>
+                    </div>
+                </div>
+                <div class="explain-grid">
+                    <div>
+                        <div class="sub-title">מה נבדק כאן</div>
+                        <p>אלה בדיוק המצבים שפוגעים באמון המשתמש אם המערכת נשמעת בטוחה מדי או מפספסת הקשר.</p>
+                    </div>
+                    <div>
+                        <div class="sub-title">איך לקרוא את הציון</div>
+                        <p>הציון מראה בכמה מהמקרים המיוחדים המערכת התנהגה כמו שהיינו רוצים בעולם אמיתי.</p>
+                    </div>
+                </div>
+                <div class="metrics-list">
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">שיעור הצלחה</div>
+                        <div class="metric-help">באיזה אחוז ממקרי הקצה המערכת התנהגה נכון.</div>
+                    </div>
+                    <div class="metric-value">37.5%</div>
+                </div>
+                <div class="metric-row">
+                    <div>
+                        <div class="metric-name">שאלות שנמדדו</div>
+                        <div class="metric-help">כמה שאלות שייכות כרגע למקרי קצה.</div>
+                    </div>
+                    <div class="metric-value">8</div>
+                </div></div>
+                <div class="sub-block"><div class="sub-title">פירוט מקרי קצה</div>
+                    <div class="mini-row">
+                        <span>ערך מדויק</span>
+                        <strong>2/2</strong>
+                    </div>
+                    <div class="mini-row">
+                        <span>עמום</span>
+                        <strong>0/2</strong>
+                    </div>
+                    <div class="mini-row">
+                        <span>חוצה פרוטוקולים</span>
+                        <strong>1/2</strong>
+                    </div>
+                    <div class="mini-row">
+                        <span>אין תשובה</span>
+                        <strong>0/2</strong>
+                    </div></div>
+                <div class="sub-block">
+                    <div class="sub-title">איזה שדות בטבלת השאלות משפיעים על המדד הזה</div>
+                    <ul class="field-list"><li><strong>category</strong>: סוג השאלה קובע איזה מבחן התנהגות המערכת צריכה לעבור.</li></ul>
+                </div>
+            </section>
+        </section>
+
+        <section class="panel">
+            <h2>טבלת העבודה המלאה של השאלות</h2>
+            <p class="muted">זו הטבלה שהלקוח והצוות יכולים לעבוד עליה יחד. כל שורה מראה מה נמדד, למה זה משפיע, ומה כדאי להשלים או לחדד.</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>סוג שאלה</th>
+                            <th>שאלה</th>
+                            <th>על אילו מדדים היא משפיעה</th>
+                            <th>תשובת בסיס</th>
+                            <th>תשובת ייחוס</th>
+                            <th>ציפיית שליפה</th>
+                            <th>תוצאת שליפה</th>
+                            <th>תוצאת תשובה</th>
+                            <th>תוצאת מקרה קצה</th>
+                            <th>תצוגת מקורות</th>
+                            <th>פעולה מומלצת</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+            <tr>
+                <td>1</td>
+                <td>
+                    <div><strong>שאלה כללית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת לסכם נושא רחב ממסמכים רלוונטיים.</div>
+                </td>
+                <td class="rtl">אילו נושאים עלו לדיון בישיבות ועד ריחן?</td>
+                <td>שליפה, תשובה</td>
+                <td class="rtl">להלן הנושאים שעלו לדיון בישיבות ועד ריחן:<br><br>*   אחריות וסמכות ועדות<br>*   מיסי ועד/מועצה על נכסים<br>*   אשפה ופחים<br>*   ועדת ביקורת<br>*   קהילנט<br>*   חברת אור עד מהנדסים- ייעוץ תאורה<br>*   חווה - שדרוג / חווה<br>*   כיכר תחנת ההסעים /...</td>
+                <td class="rtl">חסר כרגע</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Topic Discussion</div>
+                </td>
+                <td class="rtl">Hit: כן | MRR: 100.0% | Precision: 100.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 5/5 | שלמות —/5</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">ישיבת ועד מקומי ריחן - 29/24
+
+תאריך: 11.08.24
+
+מטרת הדיון: ישיבת ועד שנת 2024
+
+נכחו בדיון: יצחק בוכניק - יושב ראש הועד ה<br>פרוטוקול ישיבת וועד ריחן - 35/24
+מטרת הדיון: ישיבת ועד שנת 2024
+22.09.24 :תאריך
+נכחו בדיון: יצחק בוכניק - יו&quot;ר הועד המקו</td>
+                <td class="rtl">נראה תקין כרגע; אפשר להשתמש בפריט הזה כעוגן להשוואה עתידית.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>
+                    <div><strong>שאלה כללית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת לסכם נושא רחב ממסמכים רלוונטיים.</div>
+                </td>
+                <td class="rtl">מתי התקיימו ישיבות הוועד ומה היה סדר היום בכל אחת?</td>
+                <td>שליפה, תשובה</td>
+                <td class="rtl">להלן מועדי ישיבות הוועד וסדר היום של כל אחת מהן:<br><br>**ישיבת ועד מקומי 2/23**<br>*   **תאריך:** 22.02.23<br>*   **סדר היום:**<br>    *   1.1. סטטוס חייבים - וחובות חברי<br>    *   1.2. קול קורא לוועדת ביקורת<br>    *   1.3. חזון ויעדים עד...</td>
+                <td class="rtl">חסר כרגע</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Header and Agenda</div>
+                </td>
+                <td class="rtl">Hit: כן | MRR: 50.0% | Precision: 50.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 5/5 | שלמות —/5</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">2.5. שונות
+2.5.1. ייבדק שינוי באופן הצגת מסמך הפרוטוקולים לטבלה.
+2.5.2. שיטות עבודה - מועדי ישיבות הוועד יהיו בימי רביעי<br>פרוטוקול ישיבת ועד מקומי 2/23
+תאריך: 22.02.23
+מטרת הדיון: ישיבת ועד מקומי שנת 2023
+נכחו בדיון: אורן ספרים, אלון בראל, שח</td>
+                <td class="rtl">נראה תקין כרגע; אפשר להשתמש בפריט הזה כעוגן להשוואה עתידית.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>
+                    <div><strong>שאלה ספציפית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת עונה נכון על החלטה או פרט מוגדר.</div>
+                </td>
+                <td class="rtl">מה הוחלט בנושא צמצום פעילות קבלן הגינון בישיבה 11/25?</td>
+                <td>שליפה, תשובה, שלמות</td>
+                <td class="rtl">הוועד יפעל בהתאם למסקנות הוועדה ויפנה לקבלן הגינון בבקשה להפסיק את חוזה הגינון במתכונתו הנוכחית מסיבות תקציביות. כמו כן, יפתח מכרז גינון חדש שישקף את התקציב החדש המופחת משמעותית מהקודם.<br><br>המידע לגבי &quot;ישיבה 11/25&quot; אינו מופ...</td>
+                <td class="rtl">הוועד החליט להפסיק את חוזה הגינון במתכונתו הנוכחית ולפתוח מכרז גינון חדש שישקף תקציב מופחת, כדי לקצץ 150,000 ₪ ולהעביר לתקציב חינוך בלתי פורמלי.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 11.25</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Topic Discussion</div>
+                </td>
+                <td class="rtl">Hit: כן | MRR: 100.0% | Precision: 25.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 5/5 | שלמות 3/5</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">:נושאים .2
+צמצום המשך פעילות קבלן 2.1
+הגינון
+פירוט: בהתאם לסקר שנערך בקהילה ובהתאם להמלצת וועדת 2.1.1
+התקציב המיוחדת
+אשר<br>גינון בחירה של קבלן גינון חדש לישוב לתקופה יולי -דצמבר2.1
+2.1.1
+2.1.2
+2025
+פירוט – לאחר סגירת המכרז להצעות מחיר, נתקבלו </td>
+                <td class="rtl">לחדד את תשובת הייחוס או לוודא שהמערכת מחזירה גם את העובדות החסרות.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>
+                    <div><strong>שאלה ספציפית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת עונה נכון על החלטה או פרט מוגדר.</div>
+                </td>
+                <td class="rtl">מה הוחלט בנושא מינוי מנכ&quot;ל קבע ליישוב?</td>
+                <td>שליפה, תשובה, שלמות</td>
+                <td class="rtl">הוועד החליט למנות את אוריאל שקד כמנכ&quot;ל הקבע של היישוב.</td>
+                <td class="rtl">הוועד החליט למנות את אוריאל שקד כמנכ&quot;ל הקבע של היישוב (ישיבה 04/25).</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 4.25</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Topic Discussion</div>
+                </td>
+                <td class="rtl">Hit: כן | MRR: 100.0% | Precision: 25.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 5/5 | שלמות 4/5</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">מינוי מנכ&quot;ל קבע ליישוב 2.3
+פירוט : נערך דיון בהעדרו של אוריאל על מינוי 2.3.1
+מנכ&quot;ל קבוע בין כל המועמדים
+2.3.2
+)המתאימים.<br>2. נושאים:
+2.1. מנכ&quot;ל חדש קבוע:
+2.1.1.פירוט: הוועד דן בנושא גיוס מנכ&quot;ל חדש לישוב. בין היתר נידון נושא התנאים האפשריים בה</td>
+                <td class="rtl">לחדד את תשובת הייחוס או לוודא שהמערכת מחזירה גם את העובדות החסרות.</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>
+                    <div><strong>שאלה ללא תשובה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת להודות שאין מידע במקום להמציא.</div>
+                </td>
+                <td class="rtl">מה הוחלט בנושא בניית בית ספר חדש ביישוב?</td>
+                <td>תשובה, שלמות, מקרי קצה</td>
+                <td class="rtl">אני לא יכול לספק מידע בנוגע להחלטה על בניית בית ספר חדש ביישוב, מכיוון שהמידע שצופית לי עוסק רק בגני מועצה, פערים ביטחוניים, ותיקון מבנים של גנים ופעוטון.</td>
+                <td class="rtl">אין מידע בפרוטוקולים על בניית בית ספר חדש.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> —</div>
+                </td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">נכשל | Refusal: yes | Length: 156 | Numbers: 5</td>
+                <td class="rtl">1.2. גן מועצה לשנת הלימודים הבאה:
+1.2.1.נכון לשעה זו, אין מספיק ילדים בהרשמה לשנת הלימודים הבאה כדי לפתוח שני גני מועצה <br>.3
+החלטות :
+3.1. הוועד אישר את תוכן הטבלה המפרטת את הפערים בצרכים הביטחוניים. הוועד מבקש להכין
+טבלה עדכנית שבה הציוד, הכ</td>
+                <td class="rtl">לבדוק אם ההתנהגות המצופה הוגדרה נכון ואם התשובה באמת תומכת במטרה העסקית.</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>
+                    <div><strong>שאלה ללא תשובה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת להודות שאין מידע במקום להמציא.</div>
+                </td>
+                <td class="rtl">האם הוועד דן במדיניות החוץ של ישראל?</td>
+                <td>תשובה, שלמות, מקרי קצה</td>
+                <td class="rtl">אין לי מספיק מידע. הטקסט הנתון לא מזכיר דיון של הוועד במדיניות החוץ של ישראל.</td>
+                <td class="rtl">נושא זה לא נדון בישיבות הוועד.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> —</div>
+                </td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">נכשל | Refusal: no | Length: 57 | Numbers: 2</td>
+                <td class="rtl">:ועדת היגוי קהילה .2.3
+פירוט: הוועד עודכן בשיחה שהייתה עם החברה שמובילה את וועדת ההיגוי. עלה לדיון המטרה.2.3.1
+של הפרויק<br>2.2. הועד דן על הצורך בהפצת קול קורא לוועדת ביקורת.</td>
+                <td class="rtl">לבדוק אם ההתנהגות המצופה הוגדרה נכון ואם התשובה באמת תומכת במטרה העסקית.</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>
+                    <div><strong>שאלה חוצת פרוטוקולים</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מחברת מידע מכמה ישיבות שונות.</div>
+                </td>
+                <td class="rtl">מה כל ההחלטות שהתקבלו בנושא גינון לאורך כל הישיבות?</td>
+                <td>שליפה, תשובה, מקרי קצה</td>
+                <td class="rtl">להלן כל ההחלטות שהתקבלו בנושא גינון:<br><br>*   המכרז החדש לצוות הגינון יישלח בשבוע הקרוב לוועדת גינון, ולאחר מכן יעבור לאישור הוועד.<br>*   פרויקט מסלול מעגלי – בוצע.<br>*   החלטה בנוגע לפרויקט בריכת החורף בשביל הסלע תידון בהמשך (י...</td>
+                <td class="rtl">חסר כרגע</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Topic Discussion</div>
+                </td>
+                <td class="rtl">Hit: כן | MRR: 100.0% | Precision: 100.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 5/5 | שלמות —/5</td>
+                <td class="rtl">עבר | Retrieved from 4 source(s): 22.05.docx, פרוטוקול ועד 16.25_1.pdf(1).docx, פרוטוקול ועד 16.25_1.pdf.docx | Refusal: no | Length: 552</td>
+                <td class="rtl">* מכרז גינון:
+7.1. ממשיכים לעבוד על המכרז החדש לצוות הגינון לישוב.
+7.2. הוחלט:
+7.2.1.המכרז יישלח בשבוע הקרוב לוועדת גינו<br>2.4. הצעות וועדת גינון:
+2.4.1.פירוט : הוצגה תכנית וועדת גינון לשנת 2025. נדונו כלל הפרויקטים בתכנית
+2.4.2.החלטות: פרויקט</td>
+                <td class="rtl">נראה תקין כרגע; אפשר להשתמש בפריט הזה כעוגן להשוואה עתידית.</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>
+                    <div><strong>שאלה חוצת פרוטוקולים</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מחברת מידע מכמה ישיבות שונות.</div>
+                </td>
+                <td class="rtl">איך השתנה המצב התקציבי של היישוב מישיבה לישיבה?</td>
+                <td>שליפה, תשובה, מקרי קצה</td>
+                <td class="rtl">מצב התזרים משתפר הודות להכנסות היישוב ממיסי הרי זהב. עם זאת, היישוב עדיין נמצא בגירעון תקציבי בשל גורמים כמו השקעה במערכה משפטית מול רזפול, החזר חובות, מימון הפסדים מובנים (כמו עלויות חברת שמירה), ואי קבלת כספים מרזפול. ...</td>
+                <td class="rtl">חסר כרגע</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Topic Discussion</div>
+                </td>
+                <td class="rtl">Hit: כן | MRR: 100.0% | Precision: 100.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 3/5 | שלמות —/5</td>
+                <td class="rtl">נכשל | Retrieved from 3 source(s): פרוטוקול ועד מנהל ריחן 19-25  10.08.docx, פרוטוקול ועד17.25_1.pdf(1).docx, פרוטוקול ועד17.25_1.pdf.docx | Refusal: yes | Length: 579</td>
+                <td class="rtl">.2 נושאים
+2.1 סקירה על מצב התזרים ביישוב.
+2.1.1 פירוט - מצב התזרים משתפר הודות להכנסות היישוב ממיסי הרי זהב, עם
+זאת השקע<br>2.1.2
+₪ פירוט - פיתוח - 642,331
+- ועד
+₪20,302
+61,080 - אגודה ₪
+לאחר תשלום לכל הספקים וה. הקבע, הסכומים בחשבונות הבנק ועד</td>
+                <td class="rtl">לבדוק אם ההתנהגות המצופה הוגדרה נכון ואם התשובה באמת תומכת במטרה העסקית.</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>
+                    <div><strong>שאלת ערך מדויק</strong></div>
+                    <div class="cell-help">בודקת האם ערכים כמו סכומים, תאריכים ושמות יוצאים בדיוק הנדרש.</div>
+                </td>
+                <td class="rtl">מה הסכום שהיה בחשבון הפיתוח לפי ישיבה 08/25?</td>
+                <td>שליפה, תשובה, שלמות, מקרי קצה</td>
+                <td class="rtl">על פי הנתונים שהוצגו בישיבה, הסכום בחשבון הפיתוח הוא 642,331 ש&quot;ח.</td>
+                <td class="rtl">642,331 ₪ בחשבון הפיתוח.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 08.25</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Topic Discussion</div>
+                </td>
+                <td class="rtl">Hit: לא | MRR: 0.0% | Precision: 0.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 5/5 | שלמות 5/5</td>
+                <td class="rtl">עבר | Numbers matched: 1/1 | Word overlap: 100%</td>
+                <td class="rtl">2.1.2
+₪ פירוט - פיתוח - 642,331
+- ועד
+₪20,302
+61,080 - אגודה ₪
+לאחר תשלום לכל הספקים וה. הקבע, הסכומים בחשבונות הבנק ועד<br>:נושאים 2
+2.1
+2.1.1
+: עדכונים
+2.1.2
+₪ פירוט - פיתוח - 642,331
+- ועד
+₪20,302
+61,080 - אגודה ₪
+לאחר תשלום לכל הספקים וה. ה</td>
+                <td class="rtl">נראה תקין כרגע; אפשר להשתמש בפריט הזה כעוגן להשוואה עתידית.</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>
+                    <div><strong>שאלת ערך מדויק</strong></div>
+                    <div class="cell-help">בודקת האם ערכים כמו סכומים, תאריכים ושמות יוצאים בדיוק הנדרש.</div>
+                </td>
+                <td class="rtl">מי היה יו&quot;ר הוועד בישיבה שהתקיימה ב-30.03.25?</td>
+                <td>שליפה, תשובה, שלמות, מקרי קצה</td>
+                <td class="rtl">יצחק בוכניק היה יו&quot;ר הוועד בישיבה שהתקיימה ב-30.03.25.</td>
+                <td class="rtl">יצחק בוכניק היה יו&quot;ר הוועד (ישיבה 08/25).</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 08.25, 30.03.25</div>
+                    <div class="cell-help"><strong>חלקים:</strong> Header and Agenda</div>
+                </td>
+                <td class="rtl">Hit: כן | MRR: 33.3% | Precision: 25.0%</td>
+                <td class="rtl">נאמנות 5/5 | רלוונטיות 5/5 | שלמות 4/5</td>
+                <td class="rtl">עבר | Numbers matched: 1/2 | Word overlap: 86%</td>
+                <td class="rtl">פרוטוקול ישיבת וועד מנהל ריחן - 07/25
+תאריך: 16.03.25
+מטרת הדיון: ישיבת ועד שנת 2025
+נכחו בדיון: יצחק בוכניק - יוייר הוע<br>פרוטוקול ישיבת וועד מנהל ריחן - 07/25
+מטרת הדיון: ישיבת ועד שנת 2025
+תאריך: 16.03.25
+נכחו בדיון: יצחק בוכניק - יו&quot;ר הועד</td>
+                <td class="rtl">לחדד את תשובת הייחוס או לוודא שהמערכת מחזירה גם את העובדות החסרות.</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>
+                    <div><strong>שאלה עמומה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מגיבה בזהירות לשאלה כללית מדי.</div>
+                </td>
+                <td class="rtl">מה המצב?</td>
+                <td>תשובה, מקרי קצה</td>
+                <td class="rtl">להלן המצב על פי המסמך:<br><br>*   **סטטוס פרויקטים 2024-2025:** כל הפרויקטים לא חרגו מהתקציב שאושר. טבלת הפרויקטים מעודכנת ותוצג באספת חברים הקרובה, תהיה פתוחה לעיון הציבור ותפורסם אחת לרבעון.<br>*   **מצב תזרימי (נכון ל-22/06 20...</td>
+                <td class="rtl">חסר כרגע</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> —</div>
+                </td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">נכשל | Too specific for ambiguous query (1928 chars, 52 numeric token(s), 4 sources)</td>
+                <td class="rtl">סטטוס פרוייקטים 2.2
+2.2.1
+פירוט : נערכה סקירה אל מול הועד בנושא השקעות פיתוח ביישוב, הוצגה טבלה
+ערוכה ומעודכנת במצב הפרו<br>: נושאים .2
+דו&quot;ח מצב תזרימי בקופת היישוב - נכון ל- 22/06 20:00 פירוט – בקופת היישוב בחשבון 2.1
+802,344 הפיתוח ₪
+בחשבון ה</td>
+                <td class="rtl">לבדוק אם ההתנהגות המצופה הוגדרה נכון ואם התשובה באמת תומכת במטרה העסקית.</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>
+                    <div><strong>שאלה עמומה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מגיבה בזהירות לשאלה כללית מדי.</div>
+                </td>
+                <td class="rtl">ספר לי על הוועד</td>
+                <td>תשובה, מקרי קצה</td>
+                <td class="rtl">הוועד הוא &quot;ועד מקומי&quot;.<br><br>המידע אודותיו כולל:<br>*   **הרכב חברים:** נערך דיון על אפשרות להרחיב את מספר חבריו ל-7, מתוך תובנה שכלל המשימות יחולקו למספר רב יותר של נבחרים. מנגד, הועלו נימוקים נגד הרחבה, כי מספר חברים גדול יקשה...</td>
+                <td class="rtl">חסר כרגע</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>חלקים:</strong> —</div>
+                </td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">לא נמדד</td>
+                <td class="rtl">נכשל | Too specific for ambiguous query (991 chars, 30 numeric token(s), 4 sources)</td>
+                <td class="rtl">:ועדת היגוי קהילה .2.3
+פירוט: הוועד עודכן בשיחה שהייתה עם החברה שמובילה את וועדת ההיגוי. עלה לדיון המטרה.2.3.1
+של הפרויק<br>2.3. וועד 7 חברים נערך דיון על אפשרות להרחיב את מספר חברי הוועד המכהנים ל 7 חברים, מתוך
+תובנה שכלל המשימות יחלוקו ל 7 נב</td>
+                <td class="rtl">לבדוק אם ההתנהגות המצופה הוגדרה נכון ואם התשובה באמת תומכת במטרה העסקית.</td>
+            </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="footer">Generated by Protokal.AI evaluation pipeline</div>
+    </div>
+</body>
+</html>

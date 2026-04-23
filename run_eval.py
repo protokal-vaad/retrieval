@@ -5,7 +5,7 @@ import sys
 import webbrowser
 from datetime import datetime, timezone
 
-from build_eval import build_eval_set
+from build_eval import build_eval_set, sample_per_category
 from src.settings import Settings
 from src.logger import AppLogger
 from src.models import EvalSet, EvalReport, CategoryReport
@@ -56,8 +56,15 @@ def main():
     logger = AppLogger(level=config.LOG_LEVEL).get()
 
     # Rebuild the eval set from the current question bank before scoring.
-    logger.info("Rebuilding eval set from current _QUESTIONS before evaluation.")
-    build_eval_set(output_path="eval_set.json")
+    # PROTOKAL_SAMPLE_PER_CATEGORY > 0 picks N questions per category for low-cost smoke runs.
+    sample_n = int(os.getenv("PROTOKAL_SAMPLE_PER_CATEGORY", "0"))
+    if sample_n > 0:
+        sampled = sample_per_category(sample_n)
+        logger.info("Sampling %d questions per category (total=%d) for low-cost run.", sample_n, len(sampled))
+        build_eval_set(output_path="eval_set.json", questions=sampled)
+    else:
+        logger.info("Rebuilding eval set from current _QUESTIONS before evaluation.")
+        build_eval_set(output_path="eval_set.json")
 
     # Load fresh eval set
     eval_set = _load_eval_set("eval_set.json")
