@@ -81,18 +81,37 @@ Break the follow-up work into these three sub-problems:
 - `cross_protocol`: one sampled question still failed because the answer behavior did not match the intended multi-protocol synthesis test.
 Before editing heuristics or prompts, confirm for each failure whether the problem is in product behavior, evaluator logic, or benchmark definition.
 
-3. After each scoring or prompt change, run a representative smoke slice again and compare it against the current baseline.
+3. Finish hardening the long-running evaluation flow against Vertex AI 429 failures across all stages.
+The original retry/resume work fixed `build_eval.py` only, but later logs showed that `answer` evaluation could still die inside `JudgeAgent`.
+A shared `RequestGuard` has now been added and wired through retriever, answer generation, and judge calls.
+The next verification step is a successful full 53-question run without manual restarts beyond the existing `eval_set.json` resume behavior.
+If failures still occur after the shared guard, the next likely enhancement is checkpoint/resume for category-level evaluation, not only eval-set generation.
+
+4. After each scoring or prompt change, run a representative smoke slice again and compare it against the current baseline.
 Use `PROTOKAL_SAMPLE_PER_CATEGORY=2` unless a different slice is explicitly needed.
 Check that scores stay on a sane 0-100 scale, that the intended failure mode improves, and that the dashboard still explains the fresh outputs clearly.
 Do not rely only on one full run at the end.
 
-4. Tighten the question-bank contract only when an evaluation issue reveals a concrete benchmark mismatch.
+5. Tighten the question-bank contract only when an evaluation issue reveals a concrete benchmark mismatch.
 Review `_QUESTIONS` for category fit, `golden_answer` quality, and retrieval expectations whenever a scoring problem suggests the benchmark itself is underspecified.
 The recent wording cleanup in `build_eval.py` was intentionally small and local; continue in that style only when a concrete mismatch is found.
 
-5. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance after the scoring flow is stable enough.
+6. Design the next structure for human-in-the-loop `_QUESTIONS` maintenance after the scoring flow is stable enough.
 The long-term benchmark should support real user questions, human correction, and review metadata.
 The source of truth should be structured and reviewable, not only handwritten Python.
+
+7. Split the evaluation results into three distinct reports without requiring a re-run.
+The current `eval_dashboard.html` produces a single view that is not clear enough. We need to parse the existing results (e.g., from `eval_report.json`) and generate three separate reports:
+- **Client Work Report (דוח עבודה ללקוח)**: Contains the table of questions, gold answers, categories, and other relevant information. This report must include an explanation for the client regarding the importance of this file and what actions they need to take.
+- **Technical Report (דוח טכני)**: For data scientists and statisticians. This is the most detailed technical report showing everything that happened between questions and answers, all metrics, and how everything connects to the final score.
+- **Client Summary Report (דוח מסכם ללקוח)**: Presents only the final picture to the client. Must include:
+  - Total System Score (ציון איכות המערכת הכולל): A weighted score from 0 to 100%.
+  - Breakdown into 4 core metrics with business titles:
+    - Final Answer Quality (איכות התשובות הסופיות) [% of score]: Are the system's answers complete, accurate, and free of "hallucinations" (measured against gold answers).
+    - Information Retrieval Ability (יכולת איתור המידע) [% of score]: Does the system successfully retrieve the correct documents and paragraphs from the database before answering.
+    - Reliability in Edge Cases (אמינות במצבי קיצון) [% of score]: Does the system know to say "I don't know" when info is missing, and does it correctly handle complex questions that cross-reference multiple protocols.
+    - Database Integrity (תקינות בסיס הנתונים) [% of score]: Technical metric reflecting the quality of file arrangement and their slicing in the backend system.
+*Important requirement*: Do not execute another evaluation run to get this data. Extract it from the existing JSON outputs. The code implementation must be elegant and clean, not a hacked patch.
 
 ## Current Active Stage
 
@@ -111,4 +130,6 @@ The source of truth should be structured and reviewable, not only handwritten Py
 - `2026-04-22 07:35:00 +0300` | `uncommitted` | `Claude Code` | added `sample_per_category(n)` helper to `build_eval.py` and wired `PROTOKAL_SAMPLE_PER_CATEGORY` env var into `run_eval.py` to support low-cost smoke runs; verified end-to-end pipeline on a 12-question sample (2 per category) — generated `eval_report.json` and `eval_dashboard.html` for the first time. Sample results: overall 76.7/100, retrieval 76.2 (pass), answer 92.5 (pass), chunking 93.1 (pass), edge_cases 37.5 (fail — ambiguous 0/2 and no_answer 0/2 are the regressions; cross_protocol 2/2, specificity 1/2). No scoring changes were made.
 - `2026-04-23 04:49:24 -0700` | `uncommitted` | `Codex` | rewrote `src/dashboard.py` into a client-facing work document that explains the tests, ties table fields to metrics, and turns the question grid into a collaborative benchmark worksheet
 - `2026-04-23 05:24:20 -0700` | `uncommitted` | `Codex` | validated the redesigned dashboard on a fresh 12-question smoke run and lightly tightened several benchmark question wordings in `build_eval.py`
-- Current place: sample run completed successfully on fresh outputs. Current sample scores are overall 76.7, retrieval 76.2, answer 92.5, chunking 93.1, edge_cases 37.5. Next: capture the first full 53-question baseline with no scoring changes, then use that baseline to drive edge-case tuning.
+- `2026-04-24 07:10:18 -0700` | `uncommitted` | `Codex` | replaced stage-specific 429 handling with a shared `RequestGuard` across retriever, generator, and judge calls; kept eval-set resume and verified the new guard on a 6-question smoke run that recovered from a real 429 during completeness scoring
+- `2026-04-26 04:30:00 -0700` | `uncommitted` | `Antigravity` | added task to split evaluation results into three distinct reports (Client Work, Technical, Client Summary) without re-running evaluation.
+- Current place: added new reporting requirements to the task list. Next: implement the report generation logic to create the three new reports from existing evaluation outputs.
