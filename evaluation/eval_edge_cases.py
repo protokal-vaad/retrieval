@@ -3,9 +3,9 @@ import logging
 import re
 from typing import List
 
-from src.agent import RAGAgent
-from src.models import CategoryReport, EdgeCaseResult, EvalItem
-from src.retriever import FirestoreRetriever
+from evaluation.models import CategoryReport, EdgeCaseResult, EvalItem
+from retrieval.agent import RAGAgent
+from retrieval.retriever import FirestoreRetriever
 
 
 # Phrases that indicate the system correctly declined to answer.
@@ -92,7 +92,7 @@ class EdgeCaseEvaluator:
 
     def _eval_cross_protocol(self, item: EvalItem) -> EdgeCaseResult:
         """Check if retrieval spans multiple source files and the answer shows actual synthesis."""
-        raw_docs = self._retriever.as_langchain_retriever(k=4).invoke(item.question)
+        raw_docs = self._retriever.retrieve(item.question, k=4)
         source_files = {
             self._extract_chunk_metadata(doc.metadata).get("source_file", "")
             for doc in raw_docs

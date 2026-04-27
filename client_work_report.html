@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protokal.AI — Client Work Report</title>
+    <style>
+        
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f4f6f8; color: #1f2933; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }
+        .container { max-width: 1480px; margin: 0 auto; padding: 24px; }
+        .hero { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 28px; margin-bottom: 24px; }
+        .hero h1 { margin: 0 0 8px; font-size: 32px; }
+        .muted { color: #52606d; }
+        .panel { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+        .sub-title { font-weight: 700; margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #d9e2ec; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; border-bottom: 1px solid #e4e7eb; vertical-align: top; text-align: right; font-size: 14px; }
+        th { background: #f0f4f8; font-size: 13px; }
+        .rtl { direction: rtl; }
+        .cell-help { color: #52606d; font-size: 12px; margin-top: 4px; }
+        .footer { color: #7b8794; font-size: 12px; text-align: center; padding: 8px 0 24px; }
+        .chip { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 13px; margin: 4px 6px 0 0; background: #e4e7eb; color: #1f2933; }
+        .chip-danger { background: #fde8e8; color: #9b1c1c; }
+        .chip-warn { background: #fef3c7; color: #92400e; }
+        .chip-ok { background: #dcfce7; color: #166534; }
+    
+        
+        td.missing, [class~="missing"] { background: #fff7ed; color: #9a3412; }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <section class="hero">
+            <h1>דוח עבודה ללקוח</h1>
+            <p class="muted">המסמך הזה הוא בנצ'מרק חי של מערכת ה-RAG. כל שורה מייצגת שאלה שאמורה להיענות ממסמכי הוועד.</p>
+            <p class="muted">סך כל השאלות: <strong>12</strong> | נוצר: 2026-04-27 11:29:54 UTC</p>
+        </section>
+
+        <section class="panel">
+            <h2>למה הקובץ הזה חשוב</h2>
+            <p>בסיס הנתונים של הבנצ'מרק קובע איך נמדדת איכות המערכת. ככל שהשדות בטבלה מדויקים יותר, ככה הציון משקף יותר טוב את התנהגות המערכת מול שאלות אמיתיות.</p>
+
+            <div class="sub-title">מה צריך לעשות בקובץ הזה</div>
+            <ul>
+                <li><strong>תשובת ייחוס (Golden Answer)</strong> — לכתוב לכל שאלה ספציפית את התשובה הנכונה. בלי זה אי אפשר למדוד שלמות אמיתית.</li>
+                <li><strong>ציפיית שליפה</strong> — להזין מאיזה קובץ או סוג קטע התשובה אמורה לבוא. זה הציר שמודד את כושר השליפה.</li>
+                <li><strong>סוג שאלה</strong> — לוודא שהקטגוריה משקפת באמת את אופי השאלה (ספציפית? עמומה? בלי תשובה?).</li>
+            </ul>
+        </section>
+
+        <section class="panel">
+            <h2>סטטוס שלמות הבנצ'מרק</h2>
+            <div>
+                <span class="chip chip-warn">תשובות ייחוס חסרות לשאלות ספציפיות: 0</span>
+                <span class="chip chip-warn">ציפיות שליפה חסרות לשאלות מבוססות עובדות: 2</span>
+            </div>
+        </section>
+    
+        <section class="panel">
+            <h2>טבלת השאלות לעבודה</h2>
+            <p class="muted">יש להשלים שדות חסרים, לחדד תשובות ייחוס, ולעדכן ציפיות שליפה. כל שינוי כאן ישפיע על הריצה הבאה של ההערכה.</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>סוג שאלה</th>
+                            <th>שאלה</th>
+                            <th>תשובת ייחוס</th>
+                            <th>ציפיית שליפה</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+            <tr>
+                <td>1</td>
+                <td>
+                    <div><strong>שאלה כללית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת לסכם נושא רחב ממסמכים רלוונטיים.</div>
+                </td>
+                <td class="rtl">אילו נושאים עלו לדיון בישיבות ועד ריחן?</td>
+                <td class="rtl" class="missing">חסר — להשלים</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Topic Discussion</div>
+                </td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>
+                    <div><strong>שאלה כללית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת לסכם נושא רחב ממסמכים רלוונטיים.</div>
+                </td>
+                <td class="rtl">מתי התקיימו ישיבות הוועד ומה היה סדר היום בכל אחת?</td>
+                <td class="rtl" class="missing">חסר — להשלים</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Header and Agenda</div>
+                </td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>
+                    <div><strong>שאלה ספציפית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת עונה נכון על החלטה או פרט מוגדר.</div>
+                </td>
+                <td class="rtl">מה הוחלט בנושא צמצום פעילות קבלן הגינון בישיבה 11/25?</td>
+                <td class="rtl" >הוועד החליט להפסיק את חוזה הגינון במתכונתו הנוכחית ולפתוח מכרז גינון חדש שישקף תקציב מופחת, כדי לקצץ 150,000 ₪ ולהעביר לתקציב חינוך בלתי פורמלי.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 11.25</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Topic Discussion</div>
+                </td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>
+                    <div><strong>שאלה ספציפית</strong></div>
+                    <div class="cell-help">בודקת האם המערכת עונה נכון על החלטה או פרט מוגדר.</div>
+                </td>
+                <td class="rtl">מה הוחלט בנושא מינוי מנכ&quot;ל קבע ליישוב?</td>
+                <td class="rtl" >הוועד החליט למנות את אוריאל שקד כמנכ&quot;ל הקבע של היישוב (ישיבה 04/25).</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 4.25</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Topic Discussion</div>
+                </td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>
+                    <div><strong>שאלה ללא תשובה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת להודות שאין מידע במקום להמציא.</div>
+                </td>
+                <td class="rtl">מה הוחלט בנושא בניית בית ספר חדש ביישוב?</td>
+                <td class="rtl" >אין מידע בפרוטוקולים על בניית בית ספר חדש.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> —</div>
+                </td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>
+                    <div><strong>שאלה ללא תשובה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת יודעת להודות שאין מידע במקום להמציא.</div>
+                </td>
+                <td class="rtl">האם הוועד דן במדיניות החוץ של ישראל?</td>
+                <td class="rtl" >נושא זה לא נדון בישיבות הוועד.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> —</div>
+                </td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>
+                    <div><strong>שאלה חוצת פרוטוקולים</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מחברת מידע מכמה ישיבות שונות.</div>
+                </td>
+                <td class="rtl">מה כל ההחלטות שהתקבלו בנושא גינון לאורך כל הישיבות?</td>
+                <td class="rtl" class="missing">חסר — להשלים</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Topic Discussion</div>
+                </td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>
+                    <div><strong>שאלה חוצת פרוטוקולים</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מחברת מידע מכמה ישיבות שונות.</div>
+                </td>
+                <td class="rtl">איך השתנה המצב התקציבי של היישוב מישיבה לישיבה?</td>
+                <td class="rtl" class="missing">חסר — להשלים</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Topic Discussion</div>
+                </td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>
+                    <div><strong>שאלת ערך מדויק</strong></div>
+                    <div class="cell-help">בודקת האם ערכים כמו סכומים, תאריכים ושמות יוצאים בדיוק הנדרש.</div>
+                </td>
+                <td class="rtl">מה הסכום שהיה בחשבון הפיתוח לפי ישיבה 08/25?</td>
+                <td class="rtl" >642,331 ₪ בחשבון הפיתוח.</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 08.25</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Topic Discussion</div>
+                </td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>
+                    <div><strong>שאלת ערך מדויק</strong></div>
+                    <div class="cell-help">בודקת האם ערכים כמו סכומים, תאריכים ושמות יוצאים בדיוק הנדרש.</div>
+                </td>
+                <td class="rtl">מי היה יו&quot;ר הוועד בישיבה שהתקיימה ב-30.03.25?</td>
+                <td class="rtl" >יצחק בוכניק היה יו&quot;ר הוועד (ישיבה 08/25).</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> 08.25, 30.03.25</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> Header and Agenda</div>
+                </td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>
+                    <div><strong>שאלה עמומה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מגיבה בזהירות לשאלה כללית מדי.</div>
+                </td>
+                <td class="rtl">מה המצב?</td>
+                <td class="rtl" class="missing">חסר — להשלים</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> —</div>
+                </td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>
+                    <div><strong>שאלה עמומה</strong></div>
+                    <div class="cell-help">בודקת האם המערכת מגיבה בזהירות לשאלה כללית מדי.</div>
+                </td>
+                <td class="rtl">ספר לי על הוועד</td>
+                <td class="rtl" class="missing">חסר — להשלים</td>
+                <td class="rtl">
+                    <div><strong>קבצים:</strong> —</div>
+                    <div class="cell-help"><strong>סוגי קטע:</strong> —</div>
+                </td>
+            </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    
+        <div class="footer">Generated by Protokal.AI evaluation pipeline</div>
+    </div>
+</body>
+</html>

@@ -1,30 +1,33 @@
 import os
-import sys
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
 from retrieval.settings import Settings
 from retrieval.logger import AppLogger
 from retrieval.request_guard import RequestGuard
 from retrieval.retriever import FirestoreRetriever
 from retrieval.agent import RAGAgent
+from retrieval.models import RetrievalResult
 
+class AskRequest(BaseModel):
+    question: str
 
-TEST_QUESTION = "מה הנושאים שנלמדים בקורס?"
+# Global references for dependency injection
+agent: RAGAgent = None
 
-
-def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "serve":
-        import uvicorn
-        uvicorn.run("app.api:app", host="0.0.0.0", port=8000, reload=True)
-        return
-
-    sys.stdout.reconfigure(encoding="utf-8")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global agent
     config = Settings()
-
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS
 
     app_logger = AppLogger(level=config.LOG_LEVEL)
     app_logger.setup()
     logger = app_logger.get()
-    logger.info("Testing vector DB connection with one question.")
+    
+    logger.info("Starting FastAPI service setup")
 
     request_guard = RequestGuard(logger=logger)
     request_guard.setup()
@@ -50,17 +53,26 @@ def main():
         gcs_bucket_name=config.GCS_BUCKET_NAME,
     )
     agent.setup()
-
-    result = agent.run(TEST_QUESTION)
-
-    print(f"\n{'=' * 60}")
-    print(f"Question : {result.question}")
-    print(f"\nAnswer   :\n{result.answer}")
-    print(f"\nSources  : {len(result.source_documents)} document(s)")
-    for i, doc in enumerate(result.source_documents, 1):
-        print(f"  [{i}] {doc.content[:120]}...")
-    print("=" * 60)
+    
+    yield
+    
+    logger.info("Shutting down FastAPI service")
 
 
-if __name__ == "__main__":
-    main()
+app = FastAPI(lifespan=lifespan, title="Protokal Retrieval API")
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "agent_loaded": agent is not None}
+
+@app.post("/ask", response_model=RetrievalResult)
+def ask(request: AskRequest):
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not ready")
+    try:
+        return agent.run(request.question)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+_PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "public")
+app.mount("/", StaticFiles(directory=_PUBLIC_DIR, html=True), name="public")

@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     FIRESTORE_DATABASE: str = Field(..., description="Firestore database ID")
     FIRESTORE_COLLECTION: str = Field(..., description="Firestore collection storing vector embeddings")
 
+    # Cloud Storage
+    GCS_BUCKET_NAME: str = Field(default="reyhan-protocols", description="GCS bucket name for original documents")
+
     # Models
     MODEL_NAME: str = Field(..., description="Vertex AI chat model name")
     EMBEDDING_MODEL: str = Field(..., description="Vertex AI embedding model name")

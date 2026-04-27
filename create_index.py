@@ -8,7 +8,7 @@ import os
 from google.cloud.firestore_admin_v1 import FirestoreAdminClient
 from google.cloud.firestore_admin_v1.types import Index, CreateIndexRequest
 
-from src.settings import Settings
+from retrieval.settings import Settings
 
 
 def main() -> None:

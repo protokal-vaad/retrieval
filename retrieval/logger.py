@@ -6,15 +6,16 @@ class AppLogger:
 
     def __init__(self, level: str = "INFO"):
         self._level = getattr(logging, level.upper(), logging.INFO)
-        self._logger = self._build()
+        self._logger: logging.Logger | None = None
 
-    def _build(self) -> logging.Logger:
+    def setup(self) -> None:
+        """Configure the root logger and build the application logger."""
         logging.basicConfig(
             format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             level=self._level,
         )
-        return logging.getLogger("retrieval")
+        self._logger = logging.getLogger("retrieval")
 
     def get(self) -> logging.Logger:
         """Return the configured logger instance."""

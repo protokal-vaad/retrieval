@@ -5,18 +5,20 @@ import sys
 import webbrowser
 from datetime import datetime, timezone
 
-from build_eval import build_eval_set, sample_per_category
-from src.settings import Settings
-from src.logger import AppLogger
-from src.models import EvalSet, EvalReport, CategoryReport
-from src.retriever import FirestoreRetriever
-from src.agent import RAGAgent
-from src.judge import JudgeAgent
-from src.eval_retrieval import RetrievalEvaluator
-from src.eval_answer import AnswerEvaluator
-from src.eval_chunking import ChunkingEvaluator
-from src.eval_edge_cases import EdgeCaseEvaluator
-from src.dashboard import generate_dashboard
+from evaluation.build_eval import build_eval_set, sample_per_category
+from evaluation.dashboard import generate_dashboard
+from evaluation.eval_answer import AnswerEvaluator
+from evaluation.eval_chunking import ChunkingEvaluator
+from evaluation.eval_edge_cases import EdgeCaseEvaluator
+from evaluation.eval_retrieval import RetrievalEvaluator
+from evaluation.judge import JudgeAgent
+from evaluation.models import EvalSet, EvalReport, CategoryReport
+from evaluation.reports import write_all_reports
+from retrieval.agent import RAGAgent
+from retrieval.logger import AppLogger
+from retrieval.request_guard import RequestGuard
+from retrieval.retriever import FirestoreRetriever
+from retrieval.settings import Settings
 
 
 def _load_eval_set(path: str) -> EvalSet:
@@ -53,7 +55,11 @@ def main():
     config = Settings()
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS
 
-    logger = AppLogger(level=config.LOG_LEVEL).get()
+    app_logger = AppLogger(level=config.LOG_LEVEL)
+    app_logger.setup()
+    logger = app_logger.get()
+    request_guard = RequestGuard(logger=logger)
+    request_guard.setup()
 
     # Rebuild the eval set from the current question bank before scoring.
     # PROTOKAL_SAMPLE_PER_CATEGORY > 0 picks N questions per category for low-cost smoke runs.
@@ -79,6 +85,7 @@ def main():
         database=config.FIRESTORE_DATABASE,
         embedding_model=config.EMBEDDING_MODEL,
         embedding_dimensions=config.EMBEDDING_DIMENSIONS,
+        request_guard=request_guard,
         logger=logger,
     )
     retriever.setup()
@@ -86,12 +93,14 @@ def main():
     agent = RAGAgent(
         model_name=config.MODEL_NAME,
         retriever=retriever,
+        request_guard=request_guard,
         logger=logger,
     )
     agent.setup()
 
     judge = JudgeAgent(
         model_name=config.MODEL_NAME,
+        request_guard=request_guard,
         logger=logger,
     )
     judge.setup()
@@ -160,9 +169,21 @@ def main():
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report.model_dump(), f, ensure_ascii=False, indent=2)
 
-    # Generate HTML dashboard
+    # Generate HTML dashboard (legacy single-page view)
     dashboard_path = "eval_dashboard.html"
     generate_dashboard(report, eval_set, dashboard_path)
+
+    # Generate the three split reports from the same in-memory data
+    client_work_path = "client_work_report.html"
+    technical_path = "technical_report.html"
+    summary_path = "client_summary_report.html"
+    write_all_reports(
+        report,
+        eval_set,
+        client_work_path=client_work_path,
+        technical_path=technical_path,
+        client_summary_path=summary_path,
+    )
 
     # Summary
     print(f"\n{'=' * 60}")
@@ -172,12 +193,15 @@ def main():
         icon = {"pass": "[OK]", "warn": "[!!]", "fail": "[XX]"}.get(cat.status, "[??]")
         print(f"  {icon} {cat.category:15s} {cat.score:6.1f}/100  ({cat.status})")
     print(f"{'=' * 60}")
-    print(f"\n  Report:    {report_path}")
-    print(f"  Dashboard: {dashboard_path}")
+    print(f"\n  Report:         {report_path}")
+    print(f"  Dashboard:      {dashboard_path}")
+    print(f"  Client Work:    {client_work_path}")
+    print(f"  Technical:      {technical_path}")
+    print(f"  Client Summary: {summary_path}")
 
-    # Open dashboard unless explicitly disabled for automated or headless runs.
+    # Open the client summary by default; legacy dashboard kept on disk for compatibility.
     if os.getenv("PROTOKAL_OPEN_DASHBOARD", "1") == "1":
-        webbrowser.open(os.path.abspath(dashboard_path))
+        webbrowser.open(os.path.abspath(summary_path))
 
 
 if __name__ == "__main__":

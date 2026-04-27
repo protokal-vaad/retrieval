@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from google.cloud import firestore
 
-from src.models import ChunkingIssue, CategoryReport
+from evaluation.models import ChunkingIssue, CategoryReport
 
 
 _VALID_SECTION_TYPES = {"Header and Agenda", "Topic Discussion", "Closing and Decisions"}

@@ -5,6 +5,8 @@ from google.oauth2 import service_account
 from langchain_google_firestore import FirestoreVectorStore
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
+from retrieval.request_guard import RequestGuard
+
 
 class FirestoreRetriever:
     """Connects to Firestore and retrieves semantically similar document chunks."""
@@ -18,6 +20,7 @@ class FirestoreRetriever:
         database: str,
         embedding_model: str,
         embedding_dimensions: int,
+        request_guard: RequestGuard,
         logger: logging.Logger,
     ):
         self._sa_path = sa_path
@@ -27,6 +30,7 @@ class FirestoreRetriever:
         self._database = database
         self._embedding_model = embedding_model
         self._embedding_dimensions = embedding_dimensions
+        self._request_guard = request_guard
         self._logger = logger
         self._vector_store: FirestoreVectorStore = None
 
@@ -72,4 +76,12 @@ class FirestoreRetriever:
     def as_langchain_retriever(self, k: int = 4):
         """Expose the vector store as a LangChain BaseRetriever."""
         return self._vector_store.as_retriever(search_kwargs={"k": k})
+
+    def retrieve(self, question: str, k: int = 4):
+        """Retrieve similar chunks with retry and pacing around embeddings calls."""
+        retriever = self.as_langchain_retriever(k=k)
+        return self._request_guard.run(
+            f"retrieval for question: {question[:40]}",
+            lambda: retriever.invoke(question),
+        )
 

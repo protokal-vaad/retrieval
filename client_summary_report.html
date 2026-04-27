@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protokal.AI — Client Summary Report</title>
+    <style>
+        
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f4f6f8; color: #1f2933; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }
+        .container { max-width: 1480px; margin: 0 auto; padding: 24px; }
+        .hero { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 28px; margin-bottom: 24px; }
+        .hero h1 { margin: 0 0 8px; font-size: 32px; }
+        .muted { color: #52606d; }
+        .panel { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+        .sub-title { font-weight: 700; margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #d9e2ec; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; border-bottom: 1px solid #e4e7eb; vertical-align: top; text-align: right; font-size: 14px; }
+        th { background: #f0f4f8; font-size: 13px; }
+        .rtl { direction: rtl; }
+        .cell-help { color: #52606d; font-size: 12px; margin-top: 4px; }
+        .footer { color: #7b8794; font-size: 12px; text-align: center; padding: 8px 0 24px; }
+        .chip { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 13px; margin: 4px 6px 0 0; background: #e4e7eb; color: #1f2933; }
+        .chip-danger { background: #fde8e8; color: #9b1c1c; }
+        .chip-warn { background: #fef3c7; color: #92400e; }
+        .chip-ok { background: #dcfce7; color: #166534; }
+    
+        
+        .overall-panel { border-width: 2px; }
+        .overall-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; align-items: center; }
+        .overall-label { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+        .overall-explain { color: #52606d; }
+        .overall-number-box { text-align: center; }
+        .overall-number { font-size: 84px; font-weight: 700; line-height: 1; }
+        .overall-status { margin-top: 6px; font-size: 16px; font-weight: 600; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .kpi-card { background: white; border: 2px solid; border-radius: 10px; padding: 22px; }
+        .kpi-head h3 { margin: 0; font-size: 22px; }
+        .kpi-sub { color: #52606d; font-size: 13px; margin-bottom: 10px; }
+        .kpi-score { font-size: 64px; font-weight: 700; line-height: 1; margin-top: 8px; }
+        .kpi-unit { font-size: 22px; font-weight: 600; color: #52606d; margin-right: 4px; }
+        .kpi-meta { margin-top: 10px; }
+        .kpi-explain { margin-top: 14px; color: #1f2933; }
+        @media (max-width: 980px) {
+            .overall-grid, .kpi-grid { grid-template-columns: 1fr; }
+            .overall-number { font-size: 64px; }
+        }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <section class="hero">
+            <h1>דוח מסכם ללקוח</h1>
+            <p class="muted">תמונת מצב כללית של איכות מערכת ה-RAG, בארבעה מדדי-על עסקיים.</p>
+        </section>
+
+        <section class="panel overall-panel" style="border-color: #b7791f;">
+            <div class="overall-grid">
+                <div>
+                    <div class="overall-label">ציון איכות המערכת הכולל</div>
+                    <div class="overall-explain">משקלל את ארבעת מדדי-העל לפי החשיבות העסקית של כל אחד.</div>
+                </div>
+                <div class="overall-number-box" style="color: #b7791f;">
+                    <div class="overall-number">78<span class="kpi-unit">%</span></div>
+                    <div class="overall-status">דורש תשומת לב</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="kpi-grid">
+            
+            <article class="kpi-card" style="border-color: #1f9d55;">
+                <div class="kpi-head">
+                    <h3>איכות התשובות הסופיות</h3>
+                    <div class="kpi-sub">Final Answer Quality</div>
+                </div>
+                <div class="kpi-score" style="color: #1f9d55;">89<span class="kpi-unit">/100</span></div>
+                <div class="kpi-meta">
+                    <span class="chip chip-ok">תקין</span>
+                    <span class="chip">משקל בציון הכולל: 35%</span>
+                </div>
+                <p class="kpi-explain">האם התשובות מלאות, מדויקות, ונאמנות למסמכים — בלי הזיות. נמדד מול תשובות ייחוס שאושרו ידנית.</p>
+            </article>
+        
+            <article class="kpi-card" style="border-color: #1f9d55;">
+                <div class="kpi-head">
+                    <h3>יכולת איתור המידע</h3>
+                    <div class="kpi-sub">Information Retrieval Ability</div>
+                </div>
+                <div class="kpi-score" style="color: #1f9d55;">76<span class="kpi-unit">/100</span></div>
+                <div class="kpi-meta">
+                    <span class="chip chip-ok">תקין</span>
+                    <span class="chip">משקל בציון הכולל: 30%</span>
+                </div>
+                <p class="kpi-explain">האם המערכת שולפת מבסיס הנתונים את המסמכים והקטעים הנכונים לפני שהיא מנסחת תשובה.</p>
+            </article>
+        
+            <article class="kpi-card" style="border-color: #c53030;">
+                <div class="kpi-head">
+                    <h3>אמינות במצבי קיצון</h3>
+                    <div class="kpi-sub">Reliability in Edge Cases</div>
+                </div>
+                <div class="kpi-score" style="color: #c53030;">50<span class="kpi-unit">/100</span></div>
+                <div class="kpi-meta">
+                    <span class="chip chip-danger">דורש תיקון</span>
+                    <span class="chip">משקל בציון הכולל: 20%</span>
+                </div>
+                <p class="kpi-explain">האם המערכת אומרת &quot;אני לא יודע&quot; כשחסר מידע, וכיצד היא מתמודדת עם שאלות עמומות ושאלות שחוצות כמה פרוטוקולים.</p>
+            </article>
+        
+            <article class="kpi-card" style="border-color: #1f9d55;">
+                <div class="kpi-head">
+                    <h3>תקינות בסיס הנתונים</h3>
+                    <div class="kpi-sub">Database Integrity</div>
+                </div>
+                <div class="kpi-score" style="color: #1f9d55;">93<span class="kpi-unit">/100</span></div>
+                <div class="kpi-meta">
+                    <span class="chip chip-ok">תקין</span>
+                    <span class="chip">משקל בציון הכולל: 15%</span>
+                </div>
+                <p class="kpi-explain">מדד טכני שמשקף את איכות הסידור והחיתוך של הקבצים בבסיס הנתונים האחורי שמזין את המערכת.</p>
+            </article>
+        
+        </section>
+
+        <section class="panel">
+            <h2>איך לקרוא את הדוח</h2>
+            <ul>
+                <li><strong>ציון 80 ומעלה</strong> — המערכת עובדת היטב באזור הזה.</li>
+                <li><strong>60–79</strong> — דורש תשומת לב; מומלץ לבדוק עם הצוות הטכני.</li>
+                <li><strong>מתחת ל-60</strong> — דורש תיקון לפני שימוש מבצעי.</li>
+            </ul>
+            <p class="muted">לפירוט מלא ראו את הדוח הטכני. לפעולות שדרושות לשיפור הבנצ'מרק עצמו ראו את דוח העבודה ללקוח.</p>
+        </section>
+    
+        <div class="footer">Generated by Protokal.AI evaluation pipeline</div>
+    </div>
+</body>
+</html>

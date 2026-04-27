@@ -2,7 +2,7 @@
 
 from html import escape
 
-from src.models import EvalReport, EvalSet
+from evaluation.models import EvalReport, EvalSet
 
 
 _CATEGORY_INFO = {

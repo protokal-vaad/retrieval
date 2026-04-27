@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protokal.AI — Technical Report</title>
+    <style>
+        
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f4f6f8; color: #1f2933; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }
+        .container { max-width: 1480px; margin: 0 auto; padding: 24px; }
+        .hero { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 28px; margin-bottom: 24px; }
+        .hero h1 { margin: 0 0 8px; font-size: 32px; }
+        .muted { color: #52606d; }
+        .panel { background: white; border: 1px solid #d9e2ec; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+        .sub-title { font-weight: 700; margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #d9e2ec; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; border-bottom: 1px solid #e4e7eb; vertical-align: top; text-align: right; font-size: 14px; }
+        th { background: #f0f4f8; font-size: 13px; }
+        .rtl { direction: rtl; }
+        .cell-help { color: #52606d; font-size: 12px; margin-top: 4px; }
+        .footer { color: #7b8794; font-size: 12px; text-align: center; padding: 8px 0 24px; }
+        .chip { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 13px; margin: 4px 6px 0 0; background: #e4e7eb; color: #1f2933; }
+        .chip-danger { background: #fde8e8; color: #9b1c1c; }
+        .chip-warn { background: #fef3c7; color: #92400e; }
+        .chip-ok { background: #dcfce7; color: #166534; }
+    
+        
+        .overall-banner { display: inline-block; margin-top: 12px; padding: 12px 18px; border: 2px solid; border-radius: 8px; }
+        .overall-number { font-size: 38px; font-weight: 700; line-height: 1; }
+        .metrics-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px 18px; margin-bottom: 12px; }
+        .metric-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #e4e7eb; }
+        .metric-name { font-weight: 600; }
+        .metric-value { font-family: monospace; }
+        .issue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 14px 0; }
+        .issue-card { border: 1px solid #d9e2ec; border-radius: 8px; padding: 14px; background: #f8fafc; }
+        h2 { margin-top: 0; }
+        h3 { margin-top: 18px; }
+    
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <section class="hero">
+            <h1>דוח טכני</h1>
+            <p class="muted">פירוט טכני מלא של כל המדדים, כל התוצאות לכל שאלה, ואיך הם מתחברים לציון הסופי.</p>
+            <p class="muted">eval_report.created_at: 2026-04-27T11:29:54.121109+00:00 | total_items: 12</p>
+            <div class="overall-banner" style="border-color: #c53030; color: #c53030;">
+                <div class="overall-number">77.9 / 100</div>
+                <div>Overall status: דורש תיקון</div>
+            </div>
+        </section>
+    
+        <section class="panel">
+            <h2>נוסחת הציון הכולל</h2>
+            <p class="muted">overall = Σ(category_score × weight) / Σ(weights). הטבלה מראה את התרומה של כל קטגוריה לציון של 77.9.</p>
+            <table>
+                <thead>
+                    <tr><th>קטגוריה</th><th>ציון</th><th>משקל</th><th>תרומה</th><th>סטטוס</th></tr>
+                </thead>
+                <tbody>
+            <tr>
+                <td>retrieval</td>
+                <td>76.2</td>
+                <td>30%</td>
+                <td>22.86</td>
+                <td><span class="chip chip-ok">תקין</span></td>
+            </tr>
+            <tr>
+                <td>answer</td>
+                <td>88.8</td>
+                <td>35%</td>
+                <td>31.08</td>
+                <td><span class="chip chip-ok">תקין</span></td>
+            </tr>
+            <tr>
+                <td>chunking</td>
+                <td>93.1</td>
+                <td>15%</td>
+                <td>13.96</td>
+                <td><span class="chip chip-ok">תקין</span></td>
+            </tr>
+            <tr>
+                <td>edge_cases</td>
+                <td>50.0</td>
+                <td>20%</td>
+                <td>10.00</td>
+                <td><span class="chip chip-danger">דורש תיקון</span></td>
+            </tr></tbody>
+            </table>
+        </section>
+    
+            <section class="panel">
+                <h2>1. Retrieval — ציון 76.2</h2>
+                <p class="muted">זהו מדד דטרמיניסטי לחלוטין. הקוד ב-<code>src/eval_retrieval.py</code> מריץ שליפה ל-4 קטעים לכל שאלה ומשווה את התוצאה לציפיות שהוגדרו ב-<code>eval_set.json</code>.</p>
+                <div class="metrics-list">
+            <div class="metric-row">
+                <div class="metric-name">hit_rate</div>
+                <div class="metric-value">0.875</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">mrr</div>
+                <div class="metric-value">0.729</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">precision</div>
+                <div class="metric-value">0.531</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">evaluated_count</div>
+                <div class="metric-value">8</div>
+            </div></div>
+                <ul><li><strong>hit_rate</strong> — אחוז השאלות שבהן לפחות קטע אחד מתוך 4 הקטעים שנשלפו תאם את קובץ המקור או את סוג הקטע המצופה.</li><li><strong>mrr</strong> — ממוצע <code>1 / rank</code> של הקטע הרלוונטי הראשון. אם הקטע הראשון נכון מקבלים 1.0, אם רק השני נכון מקבלים 0.5, ואם אין התאמה מקבלים 0.</li><li><strong>precision</strong> — כמה מהקטעים שנשלפו היו רלוונטיים בפועל. בדוח הזה הממוצע הוא 0.53, כלומר בדרך כלל רק קצת יותר מחצי מההקשרים שנשלפו אכן התאימו.</li><li><strong>score formula</strong> — הציון מחושב ישירות בקוד כך: <code>hit_rate*50 + mrr*30 + precision*20</code>.</li></ul>
+            </section>
+        
+            <section class="panel">
+                <h2>2. Answer — ציון 88.8</h2>
+                <p class="muted">זהו המדד היחיד בדוח שנשען על <strong>LLM-as-Judge</strong>. הקוד ב-<code>src/eval_answer.py</code> שולף שוב את ההקשר, ואז <code>src/judge.py</code> מפעיל שלושה שופטים מבוססי Pydantic AI עבור Faithfulness, Relevance ו-Completeness.</p>
+                <div class="metrics-list">
+            <div class="metric-row">
+                <div class="metric-name">faithfulness_avg</div>
+                <div class="metric-value">4.120</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">relevance_avg</div>
+                <div class="metric-value">5.000</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">completeness_avg</div>
+                <div class="metric-value">4.500</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">completeness_count</div>
+                <div class="metric-value">4</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">evaluated_count</div>
+                <div class="metric-value">8</div>
+            </div></div>
+                <ul><li><strong>faithfulness_avg</strong> — האם התשובה נשארת נאמנה לטקסטים שנשלפו, בלי להוסיף פרטים שלא הופיעו בהקשר.</li><li><strong>relevance_avg</strong> — האם התשובה באמת עונה לשאלה שנשאלה, ולא רק קשורה אליה באופן כללי.</li><li><strong>completeness_avg</strong> — נמדד רק בשאלות שיש להן <code>golden_answer</code>. השופט משווה בין תשובת המערכת לתשובת הייחוס ומחזיר גם <code>missing_facts</code>.</li><li><strong>score formula</strong> — כל ממוצע מומר מסולם 1-5 ל-0-100 בעזרת <code>(avg-1)/4*100</code>, ואז מחושב <code>faith*0.4 + relevance*0.4 + completeness*0.2</code>.</li><li><strong>בפועל בריצה הזו</strong> — Completeness חושב רק עבור 4 שאלות מתוך 8, ולכן הפערים שם משקפים בעיקר איכות תשובות הייחוס והכיסוי העובדתי.</li></ul>
+            </section>
+        
+            <section class="panel">
+                <h2>3. Chunking — ציון 93.1</h2>
+                <p class="muted">זהו מדד תשתיתי ודטרמיניסטי. הקוד ב-<code>src/eval_chunking.py</code> עובר על כל 667 הקטעים ב-Firestore, מקבץ אותם לפי קובץ מקור, ובודק איכות תוכן, מטא-דאטה, פיזור section types, ומספר chunk-ים למסמך.</p>
+                <div class="metrics-list">
+            <div class="metric-row">
+                <div class="metric-name">total_chunks</div>
+                <div class="metric-value">667</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">total_files</div>
+                <div class="metric-value">116</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">total_issues</div>
+                <div class="metric-value">13</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">clean_file_rate</div>
+                <div class="metric-value">0.931</div>
+            </div></div>
+                <div style="margin: 12px 0;"><strong>Issues by type:</strong> <span class="chip chip-danger">empty_content: 7</span><span class="chip chip-danger">missing_metadata: 1</span><span class="chip chip-danger">bad_section_dist: 4</span><span class="chip chip-danger">bad_chunk_count: 1</span></div>
+                <ul><li><strong>clean_file_rate</strong> — אחוז הקבצים שלא נמצאה בהם אף בעיה. זהו גם הציון עצמו: <code>(clean files / total files) * 100</code>.</li><li><strong>issues_by_type</strong> — ספירת בעיות גולמית, לא ציון. אותו קובץ יכול להופיע כמה פעמים אם נמצאו בו כמה בעיות שונות.</li><li><strong>למה זה חשוב</strong> — Chunking לא מודד תשובות ללקוח אלא את איכות חומר הגלם שהשליפה והמודל מקבלים לפני שהם עונים.</li></ul>
+                <h3>מה כל issue type אומר בפועל</h3>
+                <div class="issue-grid">
+            <div class="issue-card">
+                <div class="sub-title">empty_content (7)</div>
+                <div class="muted">קטע ריק או קצר מדי. בקוד כל קטע קצר מ-50 תווים נספר כבעיה, ולכן השגיאה לא אומרת בהכרח שהקובץ שבור אלא שהחיתוך יצר קטע חלש מדי לשימוש.</div>
+                <ul><li><strong>20.03.24.docx</strong> — Chunk content too short (48 chars &lt; 50)</li><li><strong>24.08.22.docx</strong> — Chunk content too short (47 chars &lt; 50)</li><li><strong>9.03.22.docx</strong> — Chunk content too short (42 chars &lt; 50)</li></ul>
+            </div>
+        
+            <div class="issue-card">
+                <div class="sub-title">missing_metadata (1)</div>
+                <div class="muted">מטא-דאטה חסרה או לא תקינה. כאן נבדקים `source_file`, `section_type`, ו-`document_date`, וגם האם `section_type` שייך לאחת הקטגוריות המותרות.</div>
+                <ul><li><strong>test_verification.pdf</strong> — Invalid section_type: &#x27;Verification Test&#x27;</li></ul>
+            </div>
+        
+            <div class="issue-card">
+                <div class="sub-title">bad_section_dist (4)</div>
+                <div class="muted">פיזור מקטעים לא סביר בתוך מסמך בודד. הבדיקה מצפה בדרך כלל ל-Header אחד, לפחות Topic Discussion אחד, ולכל היותר Closing אחד.</div>
+                <ul><li><strong>data_ריחן.docx</strong> — Multiple &#x27;Header and Agenda&#x27; chunks (5)</li><li><strong>data_ריחן.docx</strong> — Multiple &#x27;Closing and Decisions&#x27; chunks (5)</li><li><strong>test_verification.pdf</strong> — Missing &#x27;Header and Agenda&#x27; chunk</li></ul>
+            </div>
+        
+            <div class="issue-card">
+                <div class="sub-title">bad_chunk_count (1)</div>
+                <div class="muted">מספר מקטעים חריג למסמך. בקוד כל מסמך עם פחות מ-2 מקטעים או יותר מ-20 מסומן כדי לאתר חיתוך חסר או חיתוך יתר.</div>
+                <ul><li><strong>test_verification.pdf</strong> — Too few chunks (1 &lt; 2)</li></ul>
+            </div>
+        </div>
+                <h3>Per-issue</h3>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead><tr><th>source_file</th><th>issue_type</th><th>detail</th></tr></thead>
+                        <tbody>
+            <tr>
+                <td class="rtl">20.03.24.docx</td>
+                <td><span class="chip chip-warn">empty_content</span></td>
+                <td class="rtl">Chunk content too short (48 chars &lt; 50)</td>
+            </tr>
+            <tr>
+                <td class="rtl">24.08.22.docx</td>
+                <td><span class="chip chip-warn">empty_content</span></td>
+                <td class="rtl">Chunk content too short (47 chars &lt; 50)</td>
+            </tr>
+            <tr>
+                <td class="rtl">9.03.22.docx</td>
+                <td><span class="chip chip-warn">empty_content</span></td>
+                <td class="rtl">Chunk content too short (42 chars &lt; 50)</td>
+            </tr>
+            <tr>
+                <td class="rtl">9.03.22.docx</td>
+                <td><span class="chip chip-warn">empty_content</span></td>
+                <td class="rtl">Chunk content too short (48 chars &lt; 50)</td>
+            </tr>
+            <tr>
+                <td class="rtl">test_verification.pdf</td>
+                <td><span class="chip chip-warn">missing_metadata</span></td>
+                <td class="rtl">Invalid section_type: &#x27;Verification Test&#x27;</td>
+            </tr>
+            <tr>
+                <td class="rtl">פרוטוקול ועד ריחן 18-25 27.07.2025_1.docx</td>
+                <td><span class="chip chip-warn">empty_content</span></td>
+                <td class="rtl">Chunk content too short (38 chars &lt; 50)</td>
+            </tr>
+            <tr>
+                <td class="rtl">פרוטוקול ועד 45.24_2.pdf</td>
+                <td><span class="chip chip-warn">empty_content</span></td>
+                <td class="rtl">Chunk content too short (49 chars &lt; 50)</td>
+            </tr>
+            <tr>
+                <td class="rtl">פרוטוקול ועד מנהל ריחן 19-25  10.08.docx</td>
+                <td><span class="chip chip-warn">empty_content</span></td>
+                <td class="rtl">Chunk content too short (38 chars &lt; 50)</td>
+            </tr>
+            <tr>
+                <td class="rtl">data_ריחן.docx</td>
+                <td><span class="chip chip-warn">bad_section_dist</span></td>
+                <td class="rtl">Multiple &#x27;Header and Agenda&#x27; chunks (5)</td>
+            </tr>
+            <tr>
+                <td class="rtl">data_ריחן.docx</td>
+                <td><span class="chip chip-warn">bad_section_dist</span></td>
+                <td class="rtl">Multiple &#x27;Closing and Decisions&#x27; chunks (5)</td>
+            </tr>
+            <tr>
+                <td class="rtl">test_verification.pdf</td>
+                <td><span class="chip chip-warn">bad_section_dist</span></td>
+                <td class="rtl">Missing &#x27;Header and Agenda&#x27; chunk</td>
+            </tr>
+            <tr>
+                <td class="rtl">test_verification.pdf</td>
+                <td><span class="chip chip-warn">bad_section_dist</span></td>
+                <td class="rtl">No &#x27;Topic Discussion&#x27; chunks found</td>
+            </tr>
+            <tr>
+                <td class="rtl">test_verification.pdf</td>
+                <td><span class="chip chip-warn">bad_chunk_count</span></td>
+                <td class="rtl">Too few chunks (1 &lt; 2)</td>
+            </tr></tbody>
+                    </table>
+                </div>
+            </section>
+        
+            <section class="panel">
+                <h2>4. Edge Cases — ציון 50.0</h2>
+                <p class="muted">המדד הזה הוא תערובת של בדיקות דטרמיניסטיות והרצה מחדש של הסוכן. הקוד ב-<code>src/eval_edge_cases.py</code> מפעיל את המערכת שוב על שאלות <code>no_answer</code>, <code>cross_protocol</code>, <code>specificity</code> ו-<code>ambiguous</code>, ואז בודק heuristics כמו אורך תשובה, סירוב לענות, מספרים בתשובה, ושליפה ממספר מסמכים.</p>
+                <div class="metrics-list">
+            <div class="metric-row">
+                <div class="metric-name">pass_rate</div>
+                <div class="metric-value">0.500</div>
+            </div>
+            <div class="metric-row">
+                <div class="metric-name">evaluated_count</div>
+                <div class="metric-value">8</div>
+            </div></div>
+                <ul><li><strong>no_answer</strong> — עובר רק אם המערכת מסרבת לענות, נשארת קצרה, ולא ממציאה מספרים.</li><li><strong>cross_protocol</strong> — עובר רק אם נשלפו לפחות שני קבצי מקור שונים, התשובה לא מסרבת, ויש מספיק אורך כדי לרמוז על סינתזה.</li><li><strong>specificity</strong> — בודק האם מספרים ומילות מפתח מה-<code>golden_answer</code> מופיעים בתשובה בפועל.</li><li><strong>ambiguous</strong> — בודק אם המערכת מבקשת הבהרה, מסתייגת, או לפחות נשארת כללית וקצרה בלי מספרים מיותרים.</li></ul>
+                <h3>פירוט לפי תת-קטגוריה</h3>
+                <table>
+                    <thead><tr><th>subcategory</th><th>passed/total</th><th>pass_rate</th></tr></thead>
+                    <tbody><tr><td>specificity</td><td>2/2</td><td>100%</td></tr><tr><td>ambiguous</td><td>0/2</td><td>0%</td></tr><tr><td>cross_protocol</td><td>2/2</td><td>100%</td></tr><tr><td>no_answer</td><td>0/2</td><td>0%</td></tr></tbody>
+                </table>
+            </section>
+        
+        <section class="panel">
+            <h2>5. Consolidated Review Queue</h2>
+            <p class="muted">במקום להציג את אותן שאלות שוב ושוב בכל קטגוריה, הטבלה הבאה מרכזת רק שאלות שדורשות קריאה נוספת: כשלי שליפה, ציוני שופט לא מושלמים, או כשלי edge-case.</p>
+            
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>סוג שאלה</th>
+                        <th>שאלה</th>
+                        <th>Retrieval signal</th>
+                        <th>Answer signal</th>
+                        <th>Edge-case signal</th>
+                    </tr>
+                </thead>
+                <tbody>
+            <tr>
+                <td>1</td>
+                <td>שאלה כללית</td>
+                <td class="rtl">אילו נושאים עלו לדיון בישיבות ועד ריחן?</td>
+                <td class="rtl">hit=yes | RR=1.000 | precision=1.000</td>
+                <td class="rtl">faith=4/5 | rel=5/5</td>
+                <td class="rtl">—</td>
+            </tr>
+        
+            <tr>
+                <td>2</td>
+                <td>שאלה כללית</td>
+                <td class="rtl">מתי התקיימו ישיבות הוועד ומה היה סדר היום בכל אחת?</td>
+                <td class="rtl">hit=yes | RR=0.500 | precision=0.500</td>
+                <td class="rtl">faith=2/5 | rel=5/5</td>
+                <td class="rtl">—</td>
+            </tr>
+        
+            <tr>
+                <td>3</td>
+                <td>שאלה ספציפית</td>
+                <td class="rtl">מה הוחלט בנושא צמצום פעילות קבלן הגינון בישיבה 11/25?</td>
+                <td class="rtl">hit=yes | RR=1.000 | precision=0.250</td>
+                <td class="rtl">faith=4/5 | rel=5/5 | compl=3/5</td>
+                <td class="rtl">—</td>
+            </tr>
+        
+            <tr>
+                <td>4</td>
+                <td>שאלה ספציפית</td>
+                <td class="rtl">מה הוחלט בנושא מינוי מנכ&quot;ל קבע ליישוב?</td>
+                <td class="rtl">hit=yes | RR=1.000 | precision=0.250</td>
+                <td class="rtl">faith=5/5 | rel=5/5 | compl=5/5</td>
+                <td class="rtl">—</td>
+            </tr>
+        
+            <tr>
+                <td>5</td>
+                <td>שאלה ללא תשובה</td>
+                <td class="rtl">מה הוחלט בנושא בניית בית ספר חדש ביישוב?</td>
+                <td class="rtl">—</td>
+                <td class="rtl">—</td>
+                <td class="rtl">Refusal: yes | Length: 269 | Numbers: 9</td>
+            </tr>
+        
+            <tr>
+                <td>6</td>
+                <td>שאלה ללא תשובה</td>
+                <td class="rtl">האם הוועד דן במדיניות החוץ של ישראל?</td>
+                <td class="rtl">—</td>
+                <td class="rtl">—</td>
+                <td class="rtl">Refusal: yes | Length: 206 | Numbers: 6</td>
+            </tr>
+        
+            <tr>
+                <td>9</td>
+                <td>שאלת ערך מדויק</td>
+                <td class="rtl">מה הסכום שהיה בחשבון הפיתוח לפי ישיבה 08/25?</td>
+                <td class="rtl">hit=no | RR=0.000 | precision=0.000</td>
+                <td class="rtl">faith=3/5 | rel=5/5 | compl=5/5</td>
+                <td class="rtl">Numbers matched: 1/1 | Word overlap: 100%</td>
+            </tr>
+        
+            <tr>
+                <td>10</td>
+                <td>שאלת ערך מדויק</td>
+                <td class="rtl">מי היה יו&quot;ר הוועד בישיבה שהתקיימה ב-30.03.25?</td>
+                <td class="rtl">hit=yes | RR=0.333 | precision=0.250</td>
+                <td class="rtl">faith=5/5 | rel=5/5 | compl=5/5</td>
+                <td class="rtl">Numbers matched: 2/2 | Word overlap: 86%</td>
+            </tr>
+        
+            <tr>
+                <td>11</td>
+                <td>שאלה עמומה</td>
+                <td class="rtl">מה המצב?</td>
+                <td class="rtl">—</td>
+                <td class="rtl">—</td>
+                <td class="rtl">Too specific for ambiguous query (2357 chars, 69 numeric token(s), 4 sources)</td>
+            </tr>
+        
+            <tr>
+                <td>12</td>
+                <td>שאלה עמומה</td>
+                <td class="rtl">ספר לי על הוועד</td>
+                <td class="rtl">—</td>
+                <td class="rtl">—</td>
+                <td class="rtl">Too specific for ambiguous query (1165 chars, 35 numeric token(s), 4 sources)</td>
+            </tr>
+        </tbody>
+            </table>
+        </div>
+    
+        </section>
+    
+        <div class="footer">Generated by Protokal.AI evaluation pipeline</div>
+    </div>
+</body>
+</html>

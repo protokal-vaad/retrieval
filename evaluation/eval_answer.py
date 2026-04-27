@@ -2,9 +2,9 @@
 import logging
 from typing import List
 
-from src.models import EvalItem, AnswerScore, CategoryReport
-from src.retriever import FirestoreRetriever
-from src.judge import JudgeAgent
+from evaluation.models import EvalItem, AnswerScore, CategoryReport
+from evaluation.judge import JudgeAgent
+from retrieval.retriever import FirestoreRetriever
 
 
 class AnswerEvaluator:
@@ -18,7 +18,7 @@ class AnswerEvaluator:
     def evaluate_item(self, item: EvalItem) -> AnswerScore:
         """Score answer quality for a single eval item."""
         # Retrieve context (same as RAGAgent does)
-        raw_docs = self._retriever.as_langchain_retriever(k=4).invoke(item.question)
+        raw_docs = self._retriever.retrieve(item.question, k=4)
         context = "\n\n".join(doc.page_content for doc in raw_docs)
 
         self._logger.info("Q%d: judging answer quality for: %s", item.id, item.question[:60])

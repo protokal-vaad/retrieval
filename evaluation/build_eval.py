@@ -5,11 +5,12 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from src.agent import RAGAgent
-from src.logger import AppLogger
-from src.models import EvalItem, EvalSet
-from src.retriever import FirestoreRetriever
-from src.settings import Settings
+from evaluation.models import EvalItem, EvalSet
+from retrieval.agent import RAGAgent
+from retrieval.logger import AppLogger
+from retrieval.request_guard import RequestGuard
+from retrieval.retriever import FirestoreRetriever
+from retrieval.settings import Settings
 
 
 # ---------------------------------------------------------------------------
@@ -439,16 +440,51 @@ _QUESTIONS: list[dict] = [
     },
 ]
 
+def _load_partial_eval_set(output_path: str, logger: logging.Logger) -> list[EvalItem]:
+    """Load already-built eval items so interrupted runs can resume."""
+    if not os.path.exists(output_path):
+        return []
+
+    with open(output_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    eval_set = EvalSet(**data)
+    logger.info("Loaded partial eval set from %s (%d items).", output_path, len(eval_set.items))
+    return eval_set.items
+
 
 def _run_questions(
     agent: RAGAgent,
     questions: list[dict],
     logger: logging.Logger,
+    output_path: str,
 ) -> list[EvalItem]:
     """Run all questions through the RAG agent and build EvalItems."""
-    items: list[EvalItem] = []
+    items = _load_partial_eval_set(output_path, logger)
+    completed_count = len(items)
 
-    for i, q in enumerate(questions, start=1):
+    if completed_count > len(questions):
+        logger.info(
+            "Partial eval set has %d items but current question bank has %d. Starting fresh.",
+            completed_count,
+            len(questions),
+        )
+        items = []
+        completed_count = 0
+
+    for index in range(completed_count):
+        existing = items[index]
+        current_question = questions[index]["question"]
+        if existing.question != current_question:
+            logger.info(
+                "Partial eval set no longer matches question bank at item %d. Starting fresh.",
+                index + 1,
+            )
+            items = []
+            completed_count = 0
+            break
+
+    for i, q in enumerate(questions[completed_count:], start=completed_count + 1):
         logger.info("[%d/%d] %s  (category=%s)", i, len(questions), q["question"], q["category"])
         result = agent.run(q["question"])
         previews = [doc.content[:120] for doc in result.source_documents]
@@ -466,6 +502,7 @@ def _run_questions(
             source_previews=previews,
         )
         items.append(item)
+        _save_eval_set(items, output_path, logger)
 
         answer_preview = result.answer[:200] + ("..." if len(result.answer) > 200 else "")
         print(f"  [{i}] {q['question']}")
@@ -505,9 +542,13 @@ def build_eval_set(output_path: str = "eval_set.json", questions: list[dict] | N
 
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = config.GOOGLE_APPLICATION_CREDENTIALS
 
-    logger = AppLogger(level=config.LOG_LEVEL).get()
+    app_logger = AppLogger(level=config.LOG_LEVEL)
+    app_logger.setup()
+    logger = app_logger.get()
     selected_questions = questions or _QUESTIONS
     logger.info("Building RAG evaluation set from question bank (%d questions).", len(selected_questions))
+    request_guard = RequestGuard(logger=logger)
+    request_guard.setup()
 
     retriever = FirestoreRetriever(
         sa_path=config.GOOGLE_APPLICATION_CREDENTIALS,
@@ -517,6 +558,7 @@ def build_eval_set(output_path: str = "eval_set.json", questions: list[dict] | N
         database=config.FIRESTORE_DATABASE,
         embedding_model=config.EMBEDDING_MODEL,
         embedding_dimensions=config.EMBEDDING_DIMENSIONS,
+        request_guard=request_guard,
         logger=logger,
     )
     retriever.setup()
@@ -524,11 +566,12 @@ def build_eval_set(output_path: str = "eval_set.json", questions: list[dict] | N
     agent = RAGAgent(
         model_name=config.MODEL_NAME,
         retriever=retriever,
+        request_guard=request_guard,
         logger=logger,
     )
     agent.setup()
 
-    items = _run_questions(agent, selected_questions, logger)
+    items = _run_questions(agent, selected_questions, logger, output_path)
     _save_eval_set(items, output_path, logger)
 
     return EvalSet(

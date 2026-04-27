@@ -2,8 +2,8 @@
 import logging
 from typing import List
 
-from src.models import EvalItem, RetrievalScore, CategoryReport
-from src.retriever import FirestoreRetriever
+from evaluation.models import EvalItem, RetrievalScore, CategoryReport
+from retrieval.retriever import FirestoreRetriever
 
 
 class RetrievalEvaluator:
@@ -48,7 +48,7 @@ class RetrievalEvaluator:
                 precision=0.0,
             )
 
-        raw_docs = self._retriever.as_langchain_retriever(k=self._k).invoke(item.question)
+        raw_docs = self._retriever.retrieve(item.question, k=self._k)
         self._logger.info("Q%d: retrieved %d docs for: %s", item.id, len(raw_docs), item.question[:60])
 
         hit = False
